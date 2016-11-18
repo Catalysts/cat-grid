@@ -1,0 +1,6 @@
+.idea
+e2e
+angular-cli.json
+karma.conf.js
+protractor.conf.js
+tslint.json
