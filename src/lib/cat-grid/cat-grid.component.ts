@@ -62,16 +62,13 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
       const conf = this.itemConfigFromEvent(item.config, event.event);
       const dims = item.getSize();
-      if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.itemDragged.item, this.ngGrid._config)
+      this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
+          .validateGridPosition(conf.col!!, conf.row!!, v.itemDragged.item, this.ngGrid._config)
         && !this.hasCollisions(conf, v.itemDragged.item.config)
         && !this.isOutsideGrid(conf, {
           columns: this.ngGrid._config.maxCols,
           rows: this.ngGrid._config.maxRows
-        })) {
-        this.ngGrid._placeholderRef.instance.valid = true;
-      } else {
-        this.ngGrid._placeholderRef.instance.valid = false;
-      }
+        });
       this.ngGrid._placeholderRef.instance.setSize(dims.x, dims.y);
       this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
     }
@@ -148,13 +145,10 @@ export class CatGridComponent implements OnInit, OnDestroy {
     conf.sizex = dims.x;
     conf.sizey = dims.y;
     this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
-    if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, item, this.ngGrid._config)
+    this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
+        .validateGridPosition(conf.col!!, conf.row!!, item, this.ngGrid._config)
       && !this.hasCollisions(conf, item)
-      && !this.isOutsideGrid(conf, {columns: this.ngGrid._config.maxCols, rows: this.ngGrid._config.maxRows})) {
-      this.ngGrid._placeholderRef.instance.valid = true;
-    } else {
-      this.ngGrid._placeholderRef.instance.valid = false;
-    }
+      && !this.isOutsideGrid(conf, {columns: this.ngGrid._config.maxCols, rows: this.ngGrid._config.maxRows});
     this.ngGrid._placeholderRef.instance.setSize(dims.x!!, dims.y!!);
     e.preventDefault();
   }

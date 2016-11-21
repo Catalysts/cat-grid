@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "lib": [
@@ -8,17 +8,19 @@
       "dom"
     ],
     "mapRoot": "./",
-    "module": "es6",
-    "strictNullChecks": true,
+    "module": "system",
+    "strictNullChecks": false,
     "skipLibCheck": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "target": "es5",
+    "outDir": "../../npm",
     "typeRoots": [
       "node_modules/@types"
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "*.spec.ts"
   ]
 }

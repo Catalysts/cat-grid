@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
-import {CatGridComponent} from "./cat-grid/cat-grid.component";
-import {Observable, Subject} from "rxjs";
-import {CatGridItemConfig} from "./cat-grid-item/cat-grid-item.config";
-import {CatGridItemComponent} from "./cat-grid-item/cat-grid-item.component";
-import {isArray} from "rxjs/util/isArray";
+import {CatGridComponent} from './cat-grid/cat-grid.component';
+import {Observable, Subject} from 'rxjs';
+import {CatGridItemConfig} from './cat-grid-item/cat-grid-item.config';
+import {CatGridItemComponent} from './cat-grid-item/cat-grid-item.component';
+import {isArray} from 'rxjs/util/isArray';
 
 @Injectable()
 export class CatGridDragService {

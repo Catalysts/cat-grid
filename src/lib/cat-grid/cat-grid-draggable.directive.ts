@@ -1,4 +1,4 @@
-import {Directive, HostListener, ElementRef, Input, HostBinding} from '@angular/core';
+import {Directive, HostListener, Input, HostBinding} from '@angular/core';
 import {CatGridDragService} from '../cat-grid-drag.service';
 
 @Directive({
@@ -12,7 +12,7 @@ export class CatGridDraggableDirective {
   }
 
   @HostListener('dragstart')
-  public dragStart() {
+  private dragStart() {
     this.gridDragService.dragItemConf = this.catGridDraggable;
   }
 }

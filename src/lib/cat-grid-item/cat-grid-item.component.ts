@@ -24,34 +24,20 @@ import {CatGridDirective} from '../cat-grid/cat-grid.directive';
   styleUrls: ['./cat-grid-item.component.css']
 })
 export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
-  @Output()
-  public onItemChange: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>(false);
-  @Output()
-  public onDragStart: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onDrag: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onDragStop: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onDragAny: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onResizeStart: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onResize: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onResizeStop: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onResizeAny: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onChangeStart: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onChange: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onChangeStop: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public onChangeAny: EventEmitter<CatGridItemEvent> = new EventEmitter<CatGridItemEvent>();
-  @Output()
-  public ngGridItemChange: EventEmitter<CatGridItemConfig> = new EventEmitter<CatGridItemConfig>();
+  @Output() public onItemChange = new EventEmitter<CatGridItemEvent>(false);
+  @Output() public onDragStart = new EventEmitter<CatGridItemEvent>();
+  @Output() public onDrag = new EventEmitter<CatGridItemEvent>();
+  @Output() public onDragStop = new EventEmitter<CatGridItemEvent>();
+  @Output() public onDragAny = new EventEmitter<CatGridItemEvent>();
+  @Output() public onResizeStart = new EventEmitter<CatGridItemEvent>();
+  @Output() public onResize = new EventEmitter<CatGridItemEvent>();
+  @Output() public onResizeStop = new EventEmitter<CatGridItemEvent>();
+  @Output() public onResizeAny = new EventEmitter<CatGridItemEvent>();
+  @Output() public onChangeStart = new EventEmitter<CatGridItemEvent>();
+  @Output() public onChange = new EventEmitter<CatGridItemEvent>();
+  @Output() public onChangeStop = new EventEmitter<CatGridItemEvent>();
+  @Output() public onChangeAny = new EventEmitter<CatGridItemEvent>();
+  @Output() public ngGridItemChange: EventEmitter<CatGridItemConfig> = new EventEmitter<CatGridItemConfig>();
 
   @ViewChild('componentContainer', {read: ViewContainerRef})
   private componentContainer: ViewContainerRef;
@@ -70,7 +56,6 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private componentRef: ComponentRef<any>;
 
-  public isFixed: boolean = false;
   public isDraggable: boolean = true;
   public isResizable: boolean = true;
 
@@ -79,8 +64,6 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
   private _sizex: number = 1;
   private _sizey: number = 1;
   public _config: CatGridItemConfig = ITEM_DEFAULT_CONFIG;
-  private _dragHandle: string;
-  private _resizeHandle: string;
   private _borderSize: number;
   private _elemLeft: number;
   private _elemTop: number;
@@ -91,8 +74,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(public elementRef: ElementRef,
               private renderer: Renderer,
               private componentFactoryResolver: ComponentFactoryResolver,
-              public _ngGrid: CatGridDirective,
-              public containerRef: ViewContainerRef) {
+              public _ngGrid: CatGridDirective) {
   }
 
   @Input('item')
@@ -132,36 +114,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => this.injectComponent(), 1);
   }
 
-  public canDrag(e: any): boolean {
-    if (!this.isDraggable) {
-      return false;
-    }
-
-    if (this._dragHandle) {
-      const parent = e.target.parentElement;
-      return parent.querySelector(this._dragHandle) === e.target;
-    }
-
-    return true;
-  }
-
-  public canResize(e: any): string {
-    if (!this.isResizable) {
-      return null;
-    }
-    const mousePos = this._getMousePosition(e);
-    const width = parseInt(this._elemWidth, 10);
-    const height = parseInt(this._elemHeight, 10);
-    if (mousePos.left < width && mousePos.left > width - this._borderSize
-      && mousePos.top < height && mousePos.top > height - this._borderSize) {
-      return 'both';
-    } else if (mousePos.left < width && mousePos.left > width - this._borderSize) {
-      return 'width';
-    } else if (mousePos.top < height && mousePos.top > height - this._borderSize) {
-      return 'height';
-    }
-
-    return null;
+  @HostListener('mousedown', ['$event'])
+  public mouseDown(e: MouseEvent) {
+    // console.log(this.canResize(e));
   }
 
   @HostListener('mousemove', ['$event'])
@@ -184,6 +139,29 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
   @HostListener('window:mouseup')
   public onMouseUp() {
     this.isResizing = false;
+  }
+
+  public canDrag(e: any): boolean {
+    return this.isDraggable;
+  }
+
+  public canResize(e: any): string | null {
+    if (!this.isResizable) {
+      return null;
+    }
+    const mousePos = this._getMousePosition(e);
+    const width = parseInt(this._elemWidth, 10);
+    const height = parseInt(this._elemHeight, 10);
+    if (mousePos.left < width && mousePos.left > width - this._borderSize
+      && mousePos.top < height && mousePos.top > height - this._borderSize) {
+      return 'both';
+    } else if (mousePos.left < width && mousePos.left > width - this._borderSize) {
+      return 'width';
+    } else if (mousePos.top < height && mousePos.top > height - this._borderSize) {
+      return 'height';
+    }
+
+    return null;
   }
 
   public getDimensions(): { width: number, height: number } {
@@ -216,12 +194,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
     this._row = config.row || ITEM_DEFAULT_CONFIG.row;
     this._sizex = config.sizex || ITEM_DEFAULT_CONFIG.sizex;
     this._sizey = config.sizey || ITEM_DEFAULT_CONFIG.sizey;
-    this._dragHandle = config.dragHandle;
-    this._resizeHandle = config.resizeHandle;
-    this._borderSize = config.borderSize;
-    this.isDraggable = config.draggable;
-    this.isResizable = config.resizable;
-    this.isFixed = config.fixed;
+    this._borderSize = config.borderSize || ITEM_DEFAULT_CONFIG.borderSize;
+    this.isDraggable = config.draggable === undefined ? ITEM_DEFAULT_CONFIG.draggable : config.draggable;
+    this.isResizable = config.resizable === undefined ? ITEM_DEFAULT_CONFIG.resizable : config.resizable;
   }
 
   public setSize(x: number, y: number, update = true): void {

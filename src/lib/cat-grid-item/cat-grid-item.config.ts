@@ -4,16 +4,14 @@ export class CatGridItemConfig {
   row?: number;
   sizex?: number;
   sizey?: number;
-  dragHandle?: string;
-  resizeHandle?: string;
   fixed?: boolean;
   draggable?: boolean;
-  resizable?: boolean;
   borderSize?: number;
+  resizable?: boolean;
   component?: any;
 }
 
-export const ITEM_DEFAULT_CONFIG: CatGridItemConfig = {
+export const ITEM_DEFAULT_CONFIG = {
   col: 1,
   row: 1,
   sizex: 1,

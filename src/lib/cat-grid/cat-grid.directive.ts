@@ -14,7 +14,7 @@ import {
 import {Observable} from 'rxjs';
 import {CatGridItemEvent} from '../cat-grid-item/cat-grid-item.event';
 import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/cat-grid-placeholder.component';
-import {CatGridConfig} from './cat-grid.config';
+import {CatGridConfig, CONST_DEFAULT_CONFIG} from './cat-grid.config';
 import {CatGridValidationService} from '../cat-grid-validation.service';
 import {CatGridItemComponent} from '../cat-grid-item/cat-grid-item.component';
 import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
@@ -23,35 +23,14 @@ import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
   selector: '[catGrid]'
 })
 export class CatGridDirective implements OnInit {
-  private static CONST_DEFAULT_CONFIG: CatGridConfig = {
-    id: '',
-    margins: [10],
-    draggable: true,
-    resizable: true,
-    maxCols: 0,
-    maxRows: 0,
-    visibleCols: 0,
-    visibleRows: 0,
-    colWidth: 250,
-    rowHeight: 250,
-    minWidth: 0,
-    minHeight: 0,
-    fixToGrid: false,
-    autoStyle: true,
-    autoResize: false,
-    maintainRatio: false,
-    preferNew: false,
-    width: '100%',
-    height: '100%'
-  };
-  @Output() public onDragStart: EventEmitter<CatGridItemComponent> = new EventEmitter<CatGridItemComponent>();
-  @Output() public onDrag: EventEmitter<CatGridItemComponent> = new EventEmitter<CatGridItemComponent>();
-  @Output() public onDragStop: EventEmitter<CatGridItemComponent> = new EventEmitter<CatGridItemComponent>();
-  @Output() public onResizeStart: EventEmitter<CatGridItemComponent> = new EventEmitter<CatGridItemComponent>();
-  @Output() public onResize: EventEmitter<CatGridItemComponent> = new EventEmitter<CatGridItemComponent>();
-  @Output() public onResizeStop: EventEmitter<CatGridItemComponent> = new EventEmitter<CatGridItemComponent>();
-  @Output() public onItemChange: EventEmitter<CatGridItemEvent[]> = new EventEmitter<CatGridItemEvent[]>();
-  @Output() public itemDroppedIn: EventEmitter<any> = new EventEmitter<any>();
+  @Output() public onDragStart = new EventEmitter<CatGridItemComponent>();
+  @Output() public onDrag = new EventEmitter<CatGridItemComponent>();
+  @Output() public onDragStop = new EventEmitter<CatGridItemComponent>();
+  @Output() public onResizeStart = new EventEmitter<CatGridItemComponent>();
+  @Output() public onResize = new EventEmitter<CatGridItemComponent>();
+  @Output() public onResizeStop = new EventEmitter<CatGridItemComponent>();
+  @Output() public onItemChange = new EventEmitter<CatGridItemEvent[]>();
+  @Output() public itemDroppedIn = new EventEmitter<any>();
 
   public mouseMove: Observable<any>;
   public colWidth: number = 250;
@@ -88,7 +67,7 @@ export class CatGridDirective implements OnInit {
   private _preferNew: boolean = false;
 
   private itemInitialSize: any;
-  public _config = CatGridDirective.CONST_DEFAULT_CONFIG;
+  public _config = CONST_DEFAULT_CONFIG;
 
   constructor(private _ngEl: ElementRef,
               private _renderer: Renderer,
@@ -134,8 +113,8 @@ export class CatGridDirective implements OnInit {
     this.resizeEnable = this._config.resizable;
     this.dragEnable = this._config.draggable;
     this.autoStyle = this._config.autoStyle;
-    this.minWidth = this._config.minWidth || CatGridDirective.CONST_DEFAULT_CONFIG.minWidth;
-    this.minHeight = this._config.minHeight || CatGridDirective.CONST_DEFAULT_CONFIG.minHeight;
+    this.minWidth = this._config.minWidth || CONST_DEFAULT_CONFIG.minWidth;
+    this.minHeight = this._config.minHeight || CONST_DEFAULT_CONFIG.minHeight;
     this.minCols = Math.max(this._config.minCols, 1);
     this.minRows = Math.max(this._config.minRows, 1);
 
@@ -180,35 +159,11 @@ export class CatGridDirective implements OnInit {
     this.setSize(width, height);
   }
 
-  public getItemPosition(index: number): { col: number, row: number } {
-    return this._items[index].getGridPosition();
-  }
-
-  public getItemSize(index: number): { x: number, y: number } {
-    return this._items[index].getSize();
-  }
-
   public setMargins(margins: number[]): void {
     this.marginTop = (margins[0]);
     this.marginRight = margins.length >= 2 ? (margins[1]) : this.marginTop;
     this.marginBottom = margins.length >= 3 ? (margins[2]) : this.marginTop;
     this.marginLeft = margins.length >= 4 ? (margins[3]) : this.marginRight;
-  }
-
-  public enableDrag(): void {
-    this.dragEnable = true;
-  }
-
-  public disableDrag(): void {
-    this.dragEnable = false;
-  }
-
-  public enableResize(): void {
-    this.resizeEnable = true;
-  }
-
-  public disableResize(): void {
-    this.resizeEnable = false;
   }
 
   public addItem(ngItem: CatGridItemComponent): void {
@@ -512,16 +467,6 @@ export class CatGridDirective implements OnInit {
     this._placeholderRef = this.viewContainer.createComponent(factory);
     this._placeholderRef.instance.registerGrid(this);
     this._placeholderRef.instance.setSize(0, 0);
-  }
-
-  public _createPlaceholder(item: CatGridItemComponent) {
-    const pos = item.getGridPosition(), dims = item.getSize();
-    const factory = this.componentFactoryResolver.resolveComponentFactory(CatGridPlaceholderComponent);
-    this._placeholderRef = item.containerRef
-      .createComponent(factory, item.containerRef.length, item.containerRef.parentInjector);
-    this._placeholderRef.instance.registerGrid(this);
-    this._placeholderRef.instance.setGridPosition(pos.col, pos.row);
-    this._placeholderRef.instance.setSize(dims.x, dims.y);
   }
 }
 

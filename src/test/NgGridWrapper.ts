@@ -4,7 +4,6 @@
 import {
     Component, Input,
 } from '@angular/core';
-import {CatGridComponent} from "../cat-grid/cat-grid.component";
 
 @Component({
     selector: 'ngGridWrapper',

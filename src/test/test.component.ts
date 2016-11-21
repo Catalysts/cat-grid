@@ -1,14 +1,14 @@
 import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
-import {CatGridConfig} from "../cat-grid/cat-grid.config";
-import {CatGridValidationService} from "../cat-grid-validation.service";
-import {CatGridDragService} from "../cat-grid-drag.service";
-import {CatGridItemConfig} from "../cat-grid-item/cat-grid-item.config";
-import {CatGridDirective} from "../cat-grid/cat-grid.directive";
-import {UUID} from "angular2-uuid";
-import {NgGridWrapper} from "./NgGridWrapper";
+import {UUID} from 'angular2-uuid';
+import {NgGridWrapper} from './NgGridWrapper';
 import {
   ItemTestComponent
-} from "./TestComponent";
+} from './TestComponent';
+import {CatGridDirective} from '../lib/cat-grid/cat-grid.directive';
+import {CatGridConfig} from '../lib/cat-grid/cat-grid.config';
+import {CatGridItemConfig} from '../lib/cat-grid-item/cat-grid-item.config';
+import {CatGridValidationService} from '../lib/cat-grid-validation.service';
+import {CatGridDragService} from '../lib/cat-grid-drag.service';
 
 @Component({
   selector: 'cat-test',
@@ -167,9 +167,5 @@ export class TestComponent implements OnInit {
 
   private validatePosition(gridCol: number, gridRow: number): boolean {
     return gridCol % 8 === 1;
-  }
-
-  private validateResize(col: number, row: number, conf: CatGridItemConfig): boolean {
-    return conf.sizex % 2 === 0;
   }
 }

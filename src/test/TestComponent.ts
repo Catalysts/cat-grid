@@ -4,7 +4,7 @@
 import {
   Component, Input, ChangeDetectorRef, OnInit, OnDestroy,
 } from '@angular/core';
-import {CatGridDragService} from "../cat-grid-drag.service";
+import {CatGridDragService} from '../lib/cat-grid-drag.service';
 
 @Component({
   selector: 'testComponent',
