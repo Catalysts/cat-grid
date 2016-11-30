@@ -4,11 +4,12 @@ import {NgGridWrapper} from './NgGridWrapper';
 import {
   ItemTestComponent
 } from './TestComponent';
-import {CatGridDirective} from '../lib/cat-grid/cat-grid.directive';
-import {CatGridConfig} from '../lib/cat-grid/cat-grid.config';
-import {CatGridItemConfig} from '../lib/cat-grid-item/cat-grid-item.config';
-import {CatGridValidationService} from '../lib/cat-grid-validation.service';
-import {CatGridDragService} from '../lib/cat-grid-drag.service';
+import {CatGridDirective} from '../../lib/cat-grid/cat-grid.directive';
+import {CatGridConfig} from '../../lib/cat-grid/cat-grid.config';
+import {CatGridItemConfig} from '../../lib/cat-grid-item/cat-grid-item.config';
+import {CatGridValidationService} from '../../lib/cat-grid-validation.service';
+import {CatGridDragService} from '../../lib/cat-grid-drag.service';
+import {DragulaService} from 'ng2-dragula/components/dragula.provider';
 
 @Component({
   selector: 'cat-test',
@@ -119,7 +120,7 @@ export class TestComponent implements OnInit {
           id: '8',
         }
       },
-    },
+    }
   ];
   private draggable: CatGridItemConfig = {
     id: '23',
@@ -157,9 +158,13 @@ export class TestComponent implements OnInit {
     }
   };
 
-  constructor(private gridPositionService: CatGridValidationService, private gridDragService: CatGridDragService) {
+  constructor(private gridPositionService: CatGridValidationService, private gridDragService: CatGridDragService,
+              private dragulaService: DragulaService) {
     this.gridPositionService.addPositionCondition(this.validatePosition);
     // this.gridPositionService.addResizeCondition(this.validateResize);
+    dragulaService.setOptions("cat-ng-grid-bag", {
+      copy: true
+    });
   }
 
   ngOnInit() {

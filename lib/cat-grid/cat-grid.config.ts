@@ -1,4 +1,4 @@
-export interface CatGridConfig {
+export class CatGridConfig {
   id: string;
   margins?: number[];
   draggable?: boolean;

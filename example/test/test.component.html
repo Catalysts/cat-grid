@@ -9,5 +9,8 @@
 <cat-grid #grid1 [items]="items" [config]="gridConfig"></cat-grid>
 <!--<ngGrid #grid2 [config]="gridConfig"></ngGrid>-->
 
-<div [catGridDraggable]="draggable" style="width: 100px; height: 100px; background-color: red;"></div>
+<div [dragula]='"cat-ng-grid-bag"'>
+  <div [catGridDraggable]="draggable" style="width: 100px; height: 100px; background-color: red;"></div>
+  <div style="width: 100px; height: 100px; background-color: red;" >Blablabla</div>
+</div>
 <!--<div (click)="gridDragService.bringToFront('1')">Clickkk</div>-->

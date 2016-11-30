@@ -11,7 +11,7 @@ import {
   ViewContainerRef,
   ComponentFactoryResolver
 } from '@angular/core';
-import {Observable} from 'rxjs';
+import {Observable} from 'rxjs/Rx';
 import {CatGridItemEvent} from '../cat-grid-item/cat-grid-item.event';
 import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/cat-grid-placeholder.component';
 import {CatGridConfig, CONST_DEFAULT_CONFIG} from './cat-grid.config';
@@ -69,7 +69,7 @@ export class CatGridDirective implements OnInit {
   private itemInitialSize: any;
   public _config = CONST_DEFAULT_CONFIG;
 
-  constructor(private _ngEl: ElementRef,
+  constructor(public _ngEl: ElementRef,
               private _renderer: Renderer,
               private componentFactoryResolver: ComponentFactoryResolver,
               private viewContainer: ViewContainerRef,
@@ -402,7 +402,7 @@ export class CatGridDirective implements OnInit {
     return {'x': sizex, 'y': sizey};
   }
 
-  private _calculateGridPosition(left: number, top: number): { col: number, row: number } {
+  public _calculateGridPosition(left: number, top: number): { col: number, row: number } {
     let col = Math.max(1, Math.round(left / (this.colWidth + this.marginLeft + this.marginRight)) + 1);
     let row = Math.max(1, Math.round(top / (this.rowHeight + this.marginTop + this.marginBottom)) + 1);
 

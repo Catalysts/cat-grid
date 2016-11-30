@@ -8,6 +8,7 @@ import {CatGridDraggableDirective} from './cat-grid/cat-grid-draggable.directive
 import {CatGridItemComponent} from './cat-grid-item/cat-grid-item.component';
 import {CatGridDragService} from './cat-grid-drag.service';
 import {CatGridValidationService} from './cat-grid-validation.service';
+import {DragulaModule} from 'ng2-dragula/ng2-dragula';
 
 @NgModule({
   declarations: [
@@ -15,11 +16,12 @@ import {CatGridValidationService} from './cat-grid-validation.service';
     CatGridComponent,
     CatGridPlaceholderComponent,
     CatGridDraggableDirective,
-    CatGridItemComponent
+    CatGridItemComponent,
   ],
   entryComponents: [CatGridPlaceholderComponent],
   imports: [
-    BrowserModule
+    BrowserModule,
+    DragulaModule,
   ],
   exports: [
     CatGridDirective,

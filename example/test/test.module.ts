@@ -1,18 +1,21 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TestComponent } from './test.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {TestComponent} from './test.component';
 import {NgGridWrapper} from './NgGridWrapper';
 import {ItemTestComponent} from './TestComponent';
-import {CatGridModule} from '../lib/cat-grid.module';
+import {CatGridModule} from '../../lib/cat-grid.module';
+import {DragulaModule} from 'ng2-dragula/ng2-dragula';
 
 @NgModule({
   imports: [
     CommonModule,
-    CatGridModule
+    CatGridModule,
+    DragulaModule
   ],
   entryComponents: [ItemTestComponent, NgGridWrapper],
   declarations: [TestComponent, NgGridWrapper, ItemTestComponent],
   exports: [TestComponent],
   bootstrap: [TestComponent]
 })
-export class TestModule { }
+export class TestModule {
+}
