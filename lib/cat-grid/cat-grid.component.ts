@@ -46,6 +46,8 @@ export class CatGridComponent implements OnInit, OnDestroy {
   public mouseUp$ = new Subject<MouseEvent>();
   public mouseLeave$ = new Subject<MouseEvent>();
 
+  public onMouseMove$ = new Subject<any>();
+
   public newItemAdd$: Subject<any> = new Subject();
 
   private subscriptions: Subscription[] = [];
@@ -84,6 +86,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   @HostListener('mousemove', ['$event'])
   private onMouseMove(e: MouseEvent) {
     this.mouseMove$.next(e);
+    this.onMouseMove$.next(this.toObserverEvent(e));
   }
 
   @HostListener('mouseup', ['$event'])
@@ -115,6 +118,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   private dropInside(item, event) {
     const conf = this.itemConfigFromEvent(item, event);
+    console.log(conf);
     if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, item, this.ngGrid._config)
       && !this.hasCollisions(conf)) {
       this.items.push(conf);
@@ -207,7 +211,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
     this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
         .validateGridPosition(conf.col!!, conf.row!!, item, this.ngGrid._config)
-      && !this.hasCollisions(conf, item)
+      && !this.hasCollisions(conf)
       && !this.isOutsideGrid(conf, {columns: this.ngGrid._config.maxCols, rows: this.ngGrid._config.maxRows});
     this.ngGrid._placeholderRef.instance.setSize(dims.x!!, dims.y!!);
     e.preventDefault();
@@ -227,7 +231,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
       conf.sizex = content.sizex;
       conf.sizey = content.sizey;
       if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, content, this.ngGrid._config)
-        && !this.hasCollisions(conf, content)
+        && !this.hasCollisions(conf)
         && !this.isOutsideGrid(conf, {
           columns: this.ngGrid._config.maxCols,
           rows: this.ngGrid._config.maxRows

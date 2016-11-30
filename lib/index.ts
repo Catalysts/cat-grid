@@ -3,6 +3,7 @@ export {CatGridDragService} from './cat-grid-drag.service';
 export {CatGridValidationService} from './cat-grid-validation.service';
 export {CatGridComponent} from './cat-grid/cat-grid.component';
 export {CatGridDirective} from './cat-grid/cat-grid.directive';
+export {CatGridDraggableDragulaDirective} from './cat-grid/cat-grid-draggable-dragula.directive';
 export {CatGridDraggableDirective} from './cat-grid/cat-grid-draggable.directive';
 export {CONST_DEFAULT_CONFIG} from './cat-grid/cat-grid.config';
 export {CatGridConfig} from './cat-grid/cat-grid.config';
