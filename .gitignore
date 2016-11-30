@@ -5,6 +5,7 @@
 /tmp
 /app
 /dev
+/npm
 
 # dependencies
 /node_modules

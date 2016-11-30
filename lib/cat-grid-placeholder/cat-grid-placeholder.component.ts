@@ -3,8 +3,7 @@ import {CatGridDirective} from '../cat-grid/cat-grid.directive';
 
 @Component({
   selector: 'cat-grid-placeholder',
-  templateUrl: './cat-grid-placeholder.component.html',
-  styleUrls: ['./cat-grid-placeholder.component.css']
+  template: `<div [style.display]="hidden"></div>`,
 })
 export class CatGridPlaceholderComponent {
   private hidden: boolean = true;

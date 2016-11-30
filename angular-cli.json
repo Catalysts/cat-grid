@@ -5,7 +5,7 @@
   },
   "apps": [
     {
-      "root": "src",
+      "root": "example",
       "outDir": "dist",
       "assets": [
         "assets",
@@ -18,7 +18,8 @@
       "prefix": "cat",
       "mobile": false,
       "styles": [
-        "styles.css"
+        "styles.css",
+        "../node_modules/dragula/dist/dragula.css"
       ],
       "scripts": [],
       "environments": {

@@ -12,7 +12,8 @@ import {
   Renderer,
   Input,
   HostListener,
-  ComponentFactoryResolver, HostBinding
+  ComponentFactoryResolver,
+  HostBinding
 } from '@angular/core';
 import {CatGridItemEvent} from './cat-grid-item.event';
 import {CatGridItemConfig, ITEM_DEFAULT_CONFIG} from './cat-grid-item.config';
@@ -20,8 +21,7 @@ import {CatGridDirective} from '../cat-grid/cat-grid.directive';
 
 @Component({
   selector: 'cat-grid-item',
-  templateUrl: './cat-grid-item.component.html',
-  styleUrls: ['./cat-grid-item.component.css']
+  template: '<div #componentContainer></div>',
 })
 export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() public onItemChange = new EventEmitter<CatGridItemEvent>(false);

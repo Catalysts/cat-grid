@@ -1,9 +1,14 @@
 import {Injectable} from '@angular/core';
 import {CatGridComponent} from './cat-grid/cat-grid.component';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs/Rx';
 import {CatGridItemConfig} from './cat-grid-item/cat-grid-item.config';
 import {CatGridItemComponent} from './cat-grid-item/cat-grid-item.component';
 import {isArray} from 'rxjs/util/isArray';
+
+export interface ItemDragEvent {
+  item: CatGridItemConfig;
+  event: MouseEvent;
+}
 
 @Injectable()
 export class CatGridDragService {
@@ -11,22 +16,21 @@ export class CatGridDragService {
   public itemDragged$: Observable<any>;
   public itemReleased$: Subject<any> = new Subject();
   public itemAdded$: Subject<any> = new Subject();
-
   private windowMouseMove$: Observable<any>;
   private windowMouseUp$: Observable<any>;
-  private windowDragOver$: Observable<any>;
-  private windowDrop$: Observable<any>;
-
   public draggedItem: CatGridItemComponent | null;
   public initialGrid: CatGridComponent | null;
   public dragItemConf: CatGridItemConfig | null;
   private grids: Array<CatGridComponent> = [];
 
+  private dragging$ = new Subject<ItemDragEvent>();
+  private drop$ = new Subject<ItemDragEvent>();
+
   public posOffset: any = {};
 
   private removing: boolean = false;
 
-  private static equalScreenPosition(e1, e2): boolean {
+  public static equalScreenPosition(e1, e2): boolean {
     return e1.screenX === e2.screenX && e1.screenY === e2.screenY;
   }
 
@@ -37,8 +41,6 @@ export class CatGridDragService {
       event: e,
       item: this.draggedItem
     }));
-    this.windowDragOver$ = Observable.fromEvent(this.window, 'dragover').map(e => ({grid: null, event: e}));
-    this.windowDrop$ = Observable.fromEvent(this.window, 'drop').map(e => ({grid: null, event: e}));
 
     this.itemDragged$ = this.windowMouseMove$
       .filter(() => !!this.draggedItem)
@@ -48,6 +50,20 @@ export class CatGridDragService {
       }));
 
     this.windowMouseUp$.subscribe(e => this.mouseUp(e));
+  }
+
+  public draggingObservable(): Observable<ItemDragEvent> {
+    return this.dragging$.asObservable()
+      .debounceTime(1);
+  }
+
+  public dropObservable(): Observable<ItemDragEvent> {
+    return this.drop$.asObservable();
+  }
+
+  public addDraggingSource(dragSource$: Observable<ItemDragEvent>, dropSource$: Observable<ItemDragEvent>) {
+    dragSource$.subscribe(e => this.dragging$.next(e));
+    dropSource$.subscribe(e => this.drop$.next(e));
   }
 
   public removeItemById(id: string) {
@@ -131,6 +147,7 @@ export class CatGridDragService {
         item: this.draggedItem,
         event: event.event,
       });
+      this.draggedItem = null;
     }
   }
 
