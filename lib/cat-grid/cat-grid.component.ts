@@ -59,7 +59,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     const drop$ = this.combineEqualScreen(this.gridDragService.dropObservable(), this.mouseUpObservable());
 
     this.subscriptions.push(dragOver$.subscribe(({item, event}) => this.dragInside(item, event)));
-    this.subscriptions.push(drop$.subscribe(({item, event}) => this.dropInside(item, event)))
+    this.subscriptions.push(drop$.subscribe(({item, event}) => this.dropInside(item, event)));
   }
 
   ngOnInit() {
@@ -87,11 +87,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   private onMouseMove(e: MouseEvent) {
     this.mouseMove$.next(e);
     this.onMouseMove$.next(this.toObserverEvent(e));
-  }
-
-  @HostListener('mouseup', ['$event'])
-  private onMouseUp(e: MouseEvent) {
-    this.mouseUp$.next(e);
+    e.preventDefault();
   }
 
   @HostListener('mouseleave', ['$event'])
@@ -118,7 +114,6 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   private dropInside(item, event) {
     const conf = this.itemConfigFromEvent(item, event);
-    console.log(conf);
     if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, item, this.ngGrid._config)
       && !this.hasCollisions(conf)) {
       this.items.push(conf);
@@ -195,6 +190,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     return (col + sizex - CatGridComponent.GRID_POSITIONS_OFFSET > gridSize.columns)
       || (row + sizey - CatGridComponent.GRID_POSITIONS_OFFSET > gridSize.rows);
   }
+
   @HostListener('dragover', ['$event'])
   private dragOver(e) {
     const item = this.gridDragService.dragItemConf;
@@ -246,7 +242,6 @@ export class CatGridComponent implements OnInit, OnDestroy {
     }
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
   }
-
   public removeItem(item: CatGridItemConfig) {
     let removed = false;
     this.items = this.items.filter(i => {
@@ -269,6 +264,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   @HostListener('mousedown', ['$event'])
   private mouseDown(e) {
+    e.preventDefault();
     const i = this.ngGrid.getItem(e);
     if (i) {
       if (i.canResize(e)) {
@@ -285,6 +281,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   @HostListener('mouseup', ['$event'])
   private mouseUp(e: MouseEvent) {
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
+    this.mouseUp$.next(e);
   }
 
   private toObserverEvent(event) {

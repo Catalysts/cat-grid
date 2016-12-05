@@ -8,13 +8,13 @@ import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
   selector: '[catGridDraggableDragula]'
 })
 export class CatGridDraggableDragulaDirective {
-  @Input() private catGridDraggable: CatGridItemConfig;
+  @Input() private catGridDraggableDragula: CatGridItemConfig;
   @HostBinding('draggable') draggable: boolean = false;
   @HostBinding('class') c;
 
   private dragging = false;
   private windowMouseMove$ = new Subject<MouseEvent>();
-  private windowMouseUp$= new Subject<MouseEvent>();
+  private windowMouseUp$ = new Subject<MouseEvent>();
 
   constructor(private gridDragService: CatGridDragService,
               private dragulaService: DragulaService,
@@ -29,14 +29,12 @@ export class CatGridDraggableDragulaDirective {
       .filter(() => this.dragging)
       .map(event => ({
         event,
-        item: this.catGridDraggable
+        item: this.catGridDraggableDragula
       }));
-    const dropObservable = dragulaService.drop
-      // .filter(([, element]) => element.isEqualNode(this.elementRef.nativeElement))
-      .combineLatest(this.windowMouseUp$, (_, event) => event)
+    const dropObservable = this.windowMouseUp$
       .map(event => ({
         event,
-        item: this.catGridDraggable
+        item: this.catGridDraggableDragula
       }));
     this.gridDragService.addDraggingSource(dragObservable, dropObservable);
   }
