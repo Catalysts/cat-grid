@@ -91,10 +91,10 @@ export class CatGridComponent implements OnInit, OnDestroy {
     e.preventDefault();
     const i = this.ngGrid.getItem(e);
     if (i && i.canDrag(e)) {
-        this.gridDragService.dragStart(i, this, e);
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+      this.gridDragService.dragStart(i, this, e);
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
     }
   }
 
@@ -194,8 +194,16 @@ export class CatGridComponent implements OnInit, OnDestroy {
   }
 
   private itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
-    const {col, row} = this.ngGrid._calculateGridPosition(event.pageX - this.elementRef.nativeElement.offsetLeft - this.gridDragService.posOffset.left,
-      event.pageY - this.elementRef.nativeElement.offsetTop - this.gridDragService.posOffset.top);
+    const refPos = this.ngGrid._ngEl.nativeElement.getBoundingClientRect();
+    const left = event.clientX - refPos.left;
+    const top = event.clientY - refPos.top;
+    let positionX = left - this.elementRef.nativeElement.offsetLeft;
+    let positionY = top - this.elementRef.nativeElement.offsetTop;
+    if (this.gridDragService.posOffset.left && this.gridDragService.posOffset.top) {
+      positionX -= this.gridDragService.posOffset.left;
+      positionY -= this.gridDragService.posOffset.top;
+    }
+    const {col, row} = this.ngGrid._calculateGridPosition(positionX, positionY);
     return Object.assign({}, config, {col, row});
   }
 
