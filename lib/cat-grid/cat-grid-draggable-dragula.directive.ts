@@ -24,7 +24,7 @@ export class CatGridDraggableDragulaDirective {
       .subscribe(() => this.dragging = true);
     dragulaService.dragend
       .filter(([, element]) => element.isEqualNode(this.elementRef.nativeElement))
-      .subscribe(() => this.dragging = false);
+      .subscribe(() => setTimeout(() => this.dragging = false));
     const dragObservable = this.windowMouseMove$
       .filter(() => this.dragging)
       .map(event => ({
@@ -32,6 +32,7 @@ export class CatGridDraggableDragulaDirective {
         item: this.catGridDraggableDragula
       }));
     const dropObservable = this.windowMouseUp$
+      .filter(() => this.dragging)
       .map(event => ({
         event,
         item: this.catGridDraggableDragula

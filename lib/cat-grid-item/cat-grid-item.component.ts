@@ -164,15 +164,15 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
     return null;
   }
 
-  public getDimensions(): { width: number, height: number } {
+  public getDimensions(): {width: number, height: number} {
     return {width: parseInt(this._elemWidth, 10), height: parseInt(this._elemHeight, 10)};
   }
 
-  public getSize(): { x: number, y: number } {
+  public getSize(): {x: number, y: number} {
     return {x: this._sizex, y: this._sizey};
   }
 
-  public getPosition(): { left: number, top: number } {
+  public getPosition(): {left: number, top: number} {
     return {left: this._elemLeft, top: this._elemTop};
   }
 
@@ -183,7 +183,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
-  public getGridPosition(): { col: number, row: number } {
+  public getGridPosition(): {col: number, row: number} {
     return {col: this._col, row: this._row};
   }
 
@@ -293,7 +293,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
     this.componentRef.changeDetectorRef.detectChanges();
   }
 
-  private _getMousePosition(e: any): { left: number, top: number } {
+  private _getMousePosition(e: any): {left: number, top: number} {
     if (e.originalEvent && e.originalEvent.touches) {
       const oe = e.originalEvent;
       e = oe.touches.length ? oe.touches[0] : oe.changedTouches[0];

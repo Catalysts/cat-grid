@@ -121,16 +121,17 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   private dragInside(item: CatGridItemConfig, event: MouseEvent) {
     const conf = this.itemConfigFromEvent(item, event);
+
     this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
         .validateGridPosition(conf.col!!, conf.row!!, conf, this.config)
-      && !this.hasCollisions(item);
+      && !this.hasCollisions(conf);
     this.ngGrid._placeholderRef.instance.setSize(item.sizex, item.sizey);
     this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
   }
 
   private dropInside(item, event) {
     const conf = this.itemConfigFromEvent(item, event);
-    if (this.gridPositionService.validateGridPosition(conf.col, conf.row, item, this.ngGrid._config)
+    if (this.gridPositionService.validateGridPosition(conf.col, conf.row, item, this.config)
       && !this.hasCollisions(conf)) {
       this.items.push(conf);
     }
@@ -157,11 +158,11 @@ export class CatGridComponent implements OnInit, OnDestroy {
       const conf = this.itemConfigFromEvent(item.config, event.event);
       const dims = item.getSize();
       this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
-          .validateGridPosition(conf.col!!, conf.row!!, v.itemDragged.item, this.ngGrid._config)
+          .validateGridPosition(conf.col!!, conf.row!!, v.itemDragged.item, this.config)
         && !this.hasCollisions(conf)
         && !this.isOutsideGrid(conf, {
-          columns: this.ngGrid._config.maxCols,
-          rows: this.ngGrid._config.maxRows
+          columns: this.config.maxCols,
+          rows: this.config.maxRows
         });
       this.ngGrid._placeholderRef.instance.setSize(dims.x, dims.y);
       this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
@@ -175,28 +176,31 @@ export class CatGridComponent implements OnInit, OnDestroy {
   public itemReleased(v) {
     const conf = this.itemConfigFromEvent(v.release.item.config, v.move.event);
 
-    if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.release.item, this.ngGrid._config)
+    if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.release.item, this.config)
       && !this.hasCollisions(conf)
-      && !this.isOutsideGrid(conf, {columns: this.ngGrid._config.maxCols, rows: this.ngGrid._config.maxRows})) {
+      && !this.isOutsideGrid(conf, {columns: this.config.maxCols, rows: this.config.maxRows})) {
       this.newItemAdd$.next({
         grid: this,
         newConfig: conf,
         oldConfig: v.release.item.config,
         event: v.release.event
       });
+    } else {
+      this.removeItemById(conf.id);
+      this.items.push(v.release.item.config);
     }
     v.release.item.stopMoving();
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
   }
 
   private itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
-    const {col, row} = this.ngGrid._calculateGridPosition(event.pageX - this.elementRef.nativeElement.offsetLeft,
-      event.pageY - this.elementRef.nativeElement.offsetTop);
+    const {col, row} = this.ngGrid._calculateGridPosition(event.pageX - this.elementRef.nativeElement.offsetLeft - this.gridDragService.posOffset.left,
+      event.pageY - this.elementRef.nativeElement.offsetTop - this.gridDragService.posOffset.top);
     return Object.assign({}, config, {col, row});
   }
 
   private hasCollisions(itemConf: CatGridItemConfig): boolean {
-    return this.items.filter(c => c.id === itemConf.id)
+    return this.items.filter(c => c.id !== itemConf.id)
       .some((conf: CatGridItemConfig) => intersect(toRectangle(conf), toRectangle(itemConf)));
   }
 
