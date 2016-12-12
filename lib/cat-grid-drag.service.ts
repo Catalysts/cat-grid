@@ -83,15 +83,16 @@ export class CatGridDragService {
 
   public registerGrid(grid: CatGridComponent) {
     const mouseMoveCombined = grid.onMouseMove$.merge(this.windowMouseMove$)
-      .distinct((a, b) => CatGridDragService.equalScreenPosition(a.event, b.event));
+      .distinct((a, b) => CatGridDragService.equalScreenPosition(a.event, b.event))
+      .debounceTime(1);
     const dragCombined = mouseMoveCombined
       .withLatestFrom(this.itemDragged$, (x, y) => ({
         itemDragged: y,
         event: x.event,
         grid: x.grid
       }));
-    const inside = dragCombined.filter(it => it.grid != null);
-    const outside = dragCombined.filter(it => it.grid == null);
+    const inside = dragCombined.filter(it => it.grid != null && this.draggedItem);
+    const outside = dragCombined.filter(it => it.grid == null && this.draggedItem);
     const release = this.itemReleased$.withLatestFrom(inside, (x, y) => ({release: x, move: y}))
       .filter(x => CatGridDragService.equalScreenPosition(x.release.event, x.move.event));
     grid.newItemAdd$

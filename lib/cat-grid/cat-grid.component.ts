@@ -62,9 +62,9 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const {inside, outside, release} = this.gridDragService.registerGrid(this);
-    inside.subscribe(v => this.itemDraggedInside(v));
-    outside.subscribe(v => this.itemDragOutside());
-    release.subscribe(v => this.itemReleased(v));
+    this.subscriptions.push(inside.subscribe(v => this.itemDraggedInside(v)));
+    this.subscriptions.push(outside.subscribe(v => this.itemDragOutside()));
+    this.subscriptions.push(release.subscribe(v => this.itemReleased(v)));
   }
 
   ngOnDestroy(): any {
@@ -82,7 +82,6 @@ export class CatGridComponent implements OnInit, OnDestroy {
   @HostListener('mouseleave', ['$event'])
   private onMouseLeave(e: MouseEvent) {
     this.mouseLeave$.next(e);
-
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
   }
 
