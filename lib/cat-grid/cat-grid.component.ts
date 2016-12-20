@@ -196,8 +196,8 @@ export class CatGridComponent implements OnInit, OnDestroy {
     const refPos = this.ngGrid._ngEl.nativeElement.getBoundingClientRect();
     const left = event.clientX - refPos.left;
     const top = event.clientY - refPos.top;
-    let positionX = left - this.elementRef.nativeElement.offsetLeft;
-    let positionY = top - this.elementRef.nativeElement.offsetTop;
+    let positionX = left;
+    let positionY = top;
     if (this.gridDragService.posOffset.left && this.gridDragService.posOffset.top) {
       positionX -= this.gridDragService.posOffset.left;
       positionY -= this.gridDragService.posOffset.top;

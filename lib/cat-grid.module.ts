@@ -31,7 +31,8 @@ import {CatGridDraggableDirective} from "./cat-grid/cat-grid-draggable.directive
     CatGridPlaceholderComponent,
     CatGridDraggableDragulaDirective,
     CatGridDraggableDirective,
-    CatGridItemComponent
+    CatGridItemComponent,
+    DragulaModule
   ],
   providers: [
     CatGridDragService,
