@@ -403,8 +403,9 @@ export class CatGridDirective implements OnInit {
   }
 
   public _calculateGridPosition(left: number, top: number): { col: number, row: number } {
-    let col = Math.max(1, Math.round(left / (this.colWidth + this.marginLeft + this.marginRight)) + 1);
-    let row = Math.max(1, Math.round(top / (this.rowHeight + this.marginTop + this.marginBottom)) + 1);
+    let {row, col} = this._calculateGridPositionInternal(left, top);
+    col = Math.max(1, col);
+    row = Math.max(1, row);
 
     if (!this._isWithinBoundsX({col: col, row: row}, {x: 1, y: 1})) {
       col = this._maxCols;
@@ -414,6 +415,12 @@ export class CatGridDirective implements OnInit {
     }
 
     return {'col': col, 'row': row};
+  }
+
+  private _calculateGridPositionInternal(left: number, top: number): { col: number, row: number } {
+    let col = Math.round(left / (this.colWidth + this.marginLeft + this.marginRight)) + 1;
+    let row = Math.round(top / (this.rowHeight + this.marginTop + this.marginBottom)) + 1;
+    return {'col':col, 'row':row};
   }
 
   private _isWithinBoundsX(pos: { col: number, row: number }, dims: { x: number, y: number }) {
@@ -460,6 +467,16 @@ export class CatGridDirective implements OnInit {
   public getGridPositionOfEvent(event, offset) {
     let {left, top} = this._getMousePosition(event);
     return this._calculateGridPosition(left - offset.left, top - offset.top);
+  }
+
+  public isPositionInside(event:any):boolean {
+    let {left, top} = this._getMousePosition(event);
+    let position = this._calculateGridPositionInternal(left, top);
+
+    return position.col > 0 &&
+      position.row > 0 &&
+      this._isWithinBoundsX(position, {x: 1, y: 1}) &&
+      this._isWithinBoundsY(position, {x: 1, y: 1});
   }
 
   private initPlaceholder() {

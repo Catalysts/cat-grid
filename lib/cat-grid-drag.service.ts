@@ -53,8 +53,7 @@ export class CatGridDragService {
   }
 
   public draggingObservable(): Observable<ItemDragEvent> {
-    return this.dragging$.asObservable()
-      .debounceTime(1);
+    return this.dragging$.asObservable();
   }
 
   public dropObservable(): Observable<ItemDragEvent> {
@@ -81,18 +80,45 @@ export class CatGridDragService {
     return this.grids[0].items;
   }
 
+  public unregisterGrid(grid: CatGridComponent) {
+    let index = this.grids.indexOf(grid, 0);
+    if (index > -1) {
+      this.grids.splice(index, 1);
+    }
+  }
+
   public registerGrid(grid: CatGridComponent) {
     const mouseMoveCombined = grid.onMouseMove$.merge(this.windowMouseMove$)
-      .distinct((a, b) => CatGridDragService.equalScreenPosition(a.event, b.event))
-      .debounceTime(1);
+      .distinct((a, b) => CatGridDragService.equalScreenPosition(a.event, b.event));
     const dragCombined = mouseMoveCombined
       .withLatestFrom(this.itemDragged$, (x, y) => ({
         itemDragged: y,
         event: x.event,
         grid: x.grid
       }));
-    const inside = dragCombined.filter(it => it.grid != null && this.draggedItem);
     const outside = dragCombined.filter(it => it.grid == null && this.draggedItem);
+    const inside = dragCombined.filter(it => {
+      if (!(it.grid != null && this.draggedItem)) {
+        return false;
+      }
+      let isChildGrid = false;
+      for (let gridIter of this.grids) {
+        if (gridIter === grid) {
+          isChildGrid = true;
+        } else if (isChildGrid) {
+          if (gridIter.isPositionInside(it.event)) {
+            // we are dragging over a child-grid, we don't want to propagate such drag-events to the
+            //  parent grid
+            // console.log('not propagating event because of nested grid');
+            // NOTE: would be cleaner to do this by inserting an artificial event into the outside observable
+            grid.itemDragOutside();
+            return false;
+          }
+        }
+      }
+      return true;
+    });
+
     const release = this.itemReleased$.withLatestFrom(inside, (x, y) => ({release: x, move: y}))
       .filter(x => CatGridDragService.equalScreenPosition(x.release.event, x.move.event));
     grid.newItemAdd$

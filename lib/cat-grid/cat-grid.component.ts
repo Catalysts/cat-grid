@@ -70,6 +70,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   ngOnDestroy(): any {
     this.subscriptions.forEach(s => s.unsubscribe());
     this.ngGrid._items.forEach(item => item.ngOnDestroy());
+    this.gridDragService.unregisterGrid(this);
   }
 
   @HostListener('mousemove', ['$event'])
@@ -104,8 +105,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   }
 
   public mouseMoveObservable(): Observable<MouseEvent> {
-    return this.mouseMove$.asObservable()
-      .debounceTime(1);
+    return this.mouseMove$.asObservable();
   }
 
   public mouseUpObservable() {
@@ -133,6 +133,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     if (this.gridPositionService.validateGridPosition(conf.col, conf.row, item, this.config)
       && !this.hasCollisions(conf)) {
       this.items.push(conf);
+      this.gridDragService.itemAdded$.next(this.gridDragService.getPlacedItems());
     }
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
   }
@@ -243,5 +244,9 @@ export class CatGridComponent implements OnInit, OnDestroy {
       grid: this,
       event,
     };
+  }
+
+  public isPositionInside(event:any):boolean {
+    return this.ngGrid.isPositionInside(event);
   }
 }
