@@ -83,7 +83,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   @HostListener('mouseleave', ['$event'])
   private onMouseLeave(e: MouseEvent) {
     this.mouseLeave$.next(e);
-    this.ngGrid._placeholderRef.instance.setSize(0, 0);
+    this.hidePlaceholder();
   }
 
   @HostListener('mousedown', ['$event'])
@@ -100,7 +100,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   @HostListener('mouseup', ['$event'])
   private onMouseUp(e: MouseEvent) {
-    this.ngGrid._placeholderRef.instance.setSize(0, 0);
+    this.hidePlaceholder();
     this.mouseUp$.next(e);
   }
 
@@ -119,6 +119,10 @@ export class CatGridComponent implements OnInit, OnDestroy {
   }
 
   private dragInside(item: CatGridItemConfig, event: MouseEvent) {
+    if (event.buttons == 0) {
+      // fix additional drag-event after mouse was released
+      return;
+    }
     const conf = this.itemConfigFromEvent(item, event);
 
     this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
@@ -130,12 +134,12 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   private dropInside(item, event) {
     const conf = this.itemConfigFromEvent(item, event);
+    this.hidePlaceholder();
     if (this.gridPositionService.validateGridPosition(conf.col, conf.row, item, this.config)
       && !this.hasCollisions(conf)) {
       this.items.push(conf);
       this.gridDragService.itemAdded$.next(this.gridDragService.getPlacedItems());
     }
-    this.ngGrid._placeholderRef.instance.setSize(0, 0);
   }
 
   private validPosition(item: CatGridItemConfig, event: MouseEvent) {
@@ -170,11 +174,12 @@ export class CatGridComponent implements OnInit, OnDestroy {
   }
 
   public itemDragOutside() {
-    this.ngGrid._placeholderRef.instance.setSize(0, 0);
+    this.hidePlaceholder();
   }
 
   public itemReleased(v) {
     const conf = this.itemConfigFromEvent(v.release.item.config, v.move.event);
+    this.hidePlaceholder();
 
     if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.release.item, this.config)
       && !this.hasCollisions(conf)
@@ -190,6 +195,9 @@ export class CatGridComponent implements OnInit, OnDestroy {
       this.items.push(v.release.item.config);
     }
     v.release.item.stopMoving();
+  }
+
+  private hidePlaceholder() {
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
   }
 
