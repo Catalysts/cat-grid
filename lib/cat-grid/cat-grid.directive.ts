@@ -418,8 +418,8 @@ export class CatGridDirective implements OnInit {
   }
 
   private _calculateGridPositionInternal(left: number, top: number): { col: number, row: number } {
-    let col = Math.round(left / (this.colWidth + this.marginLeft + this.marginRight)) + 1;
-    let row = Math.round(top / (this.rowHeight + this.marginTop + this.marginBottom)) + 1;
+    let col = Math.floor(left / (this.colWidth + this.marginLeft + this.marginRight)) + 1;
+    let row = Math.floor(top / (this.rowHeight + this.marginTop + this.marginBottom)) + 1;
     return {'col':col, 'row':row};
   }
 
