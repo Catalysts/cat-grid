@@ -190,9 +190,6 @@ export class CatGridComponent implements OnInit, OnDestroy {
         oldConfig: v.release.item.config,
         event: v.release.event
       });
-    } else {
-      this.removeItemById(conf.id);
-      this.items.push(v.release.item.config);
     }
     v.release.item.stopMoving();
   }

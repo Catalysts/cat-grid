@@ -174,7 +174,6 @@ export class CatGridDragService {
         item: this.draggedItem,
         event: event.event,
       });
-      this.draggedItem = null;
     }
   }
 
