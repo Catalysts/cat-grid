@@ -7,7 +7,7 @@ import {
   OnDestroy,
   EventEmitter,
   ViewChild,
-  ElementRef
+  ElementRef, HostBinding
 } from '@angular/core';
 import {Subject, Observable, Subscription} from 'rxjs/Rx';
 import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
@@ -41,6 +41,9 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   @Input()
   public items: CatGridItemConfig[] = [];
+
+  @HostBinding('style.cursor')
+  public cursor: string = 'auto';
 
   public mouseMove$ = new Subject<MouseEvent>();
   public mouseUp$ = new Subject<MouseEvent>();
@@ -128,6 +131,11 @@ export class CatGridComponent implements OnInit, OnDestroy {
     this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
         .validateGridPosition(conf.col!!, conf.row!!, conf, this.config)
       && !this.hasCollisions(conf);
+    if (!this.ngGrid._placeholderRef.instance.valid) {
+      this.cursor = 'no-drop';
+    } else {
+      this.cursor = 'auto';
+    }
     this.ngGrid._placeholderRef.instance.setSize(item.sizex, item.sizey);
     this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
   }
@@ -168,6 +176,11 @@ export class CatGridComponent implements OnInit, OnDestroy {
           columns: this.config.maxCols,
           rows: this.config.maxRows
         });
+      if (!this.ngGrid._placeholderRef.instance.valid) {
+        this.cursor = 'no-drop';
+      } else {
+        this.cursor = 'auto';
+      }
       this.ngGrid._placeholderRef.instance.setSize(dims.x, dims.y);
       this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
     }
@@ -196,6 +209,11 @@ export class CatGridComponent implements OnInit, OnDestroy {
 
   private hidePlaceholder() {
     this.ngGrid._placeholderRef.instance.setSize(0, 0);
+    if (!this.ngGrid._placeholderRef.instance.valid) {
+      this.cursor = 'no-drop';
+    } else {
+      this.cursor = 'auto';
+    }
   }
 
   private itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
