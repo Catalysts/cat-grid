@@ -170,7 +170,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
       const conf = this.itemConfigFromEvent(item.config, event.event);
       const dims = item.getSize();
       this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
-          .validateGridPosition(conf.col!!, conf.row!!, v.itemDragged.item, this.config)
+          .validateGridPosition(conf.col!!, conf.row!!, item.config, this.config)
         && !this.hasCollisions(conf)
         && !this.isOutsideGrid(conf, {
           columns: this.config.maxCols,
@@ -194,7 +194,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     const conf = this.itemConfigFromEvent(v.release.item.config, v.move.event);
     this.hidePlaceholder();
 
-    if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.release.item, this.config)
+    if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.release.item.config, this.config)
       && !this.hasCollisions(conf)
       && !this.isOutsideGrid(conf, {columns: this.config.maxCols, rows: this.config.maxRows})) {
       this.newItemAdd$.next({
