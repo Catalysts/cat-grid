@@ -155,8 +155,20 @@ export class CatGridDragService {
   }
 
   private changeSubgridItemsConfig(id: string, items: CatGridItemConfig[]) {
-    const placedItems = this.getPlacedItems();
-    const subgridIndex = placedItems.findIndex(item => item.id === id && isArray(item.component.data.items));
+    this.changeSubgridItemsConfigAux(id, items, this.getPlacedItems());
+  }
+
+  private changeSubgridItemsConfigAux(id: string, items: CatGridItemConfig[], placedItems: CatGridItemConfig[]) {
+    const subgridIndex = placedItems.findIndex(item => {
+      if (isArray(item.component.data.items)) {
+        if (item.id == id) {
+          return true;
+        } else if (item.component.data.items.length > 0) {
+          this.changeSubgridItemsConfigAux(id, items, item.component.data.items);
+        }
+      }
+      return false;
+    });
     if (subgridIndex > -1) {
       placedItems[subgridIndex].component.data.items = items;
     }
