@@ -182,6 +182,7 @@ export class CatGridDirective implements OnInit {
   }
 
   public bringToFront(id: string): void {
+    this._items.forEach(item => item.elementRef.nativeElement.style.zIndex = 'auto');
     const item = this._items.filter(i => i.config.id === id)[0];
     if (item) {
       item.elementRef.nativeElement.style.zIndex = 99999;
@@ -420,7 +421,7 @@ export class CatGridDirective implements OnInit {
   private _calculateGridPositionInternal(left: number, top: number): { col: number, row: number } {
     let col = Math.floor(left / (this.colWidth + this.marginLeft + this.marginRight)) + 1;
     let row = Math.floor(top / (this.rowHeight + this.marginTop + this.marginBottom)) + 1;
-    return {'col':col, 'row':row};
+    return {'col': col, 'row': row};
   }
 
   private _isWithinBoundsX(pos: { col: number, row: number }, dims: { x: number, y: number }) {
@@ -469,7 +470,7 @@ export class CatGridDirective implements OnInit {
     return this._calculateGridPosition(left - offset.left, top - offset.top);
   }
 
-  public isPositionInside(event:any):boolean {
+  public isPositionInside(event: any): boolean {
     let {left, top} = this._getMousePosition(event);
     let position = this._calculateGridPositionInternal(left, top);
 
