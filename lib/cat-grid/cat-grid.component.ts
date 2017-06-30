@@ -23,7 +23,7 @@ import {intersect, toRectangle} from './utils';
   template: `
     <div [catGrid]="config" (onResizeStop)="resizeFinished($event)">
       <cat-grid-item [item]="item"
-           *ngFor="let item of items">
+                     *ngFor="let item of items">
       </cat-grid-item>
     </div>
   `,
@@ -90,7 +90,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   }
 
   @HostListener('mousedown', ['$event'])
-  private onMouseDown(e) {
+  private onMouseDown(e: any) {
     e.preventDefault();
     const i = this.ngGrid.getItem(e);
     if (i && i.canDrag(e)) {
@@ -140,7 +140,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
   }
 
-  private dropInside(item, event) {
+  private dropInside(item: any, event: any) {
     const conf = this.itemConfigFromEvent(item, event);
     this.hidePlaceholder();
     if (this.gridPositionService.validateGridPosition(conf.col, conf.row, item, this.config)
@@ -163,7 +163,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     this.items = this.items.filter((item, i, arr) => ids.indexOf(item.id) === i);
   }
 
-  public itemDraggedInside(v) {
+  public itemDraggedInside(v: any) {
     if (this.gridDragService.draggedItem) {
       const {item, event} = v.itemDragged;
 
@@ -190,7 +190,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
     this.hidePlaceholder();
   }
 
-  public itemReleased(v) {
+  public itemReleased(v: any) {
     const conf = this.itemConfigFromEvent(v.release.item.config, v.move.event);
     this.hidePlaceholder();
 
@@ -262,14 +262,14 @@ export class CatGridComponent implements OnInit, OnDestroy {
     this.items = this.items.concat([item]);
   }
 
-  private toObserverEvent(event) {
+  private toObserverEvent(event: any) {
     return {
       grid: this,
       event,
     };
   }
 
-  public isPositionInside(event:any):boolean {
+  public isPositionInside(event: any): boolean {
     return this.ngGrid.isPositionInside(event);
   }
 }

@@ -30,8 +30,8 @@ export class CatGridDragService {
 
   private removing: boolean = false;
 
-  public static equalScreenPosition(e1, e2): boolean {
-    return e1.screenX === e2.screenX && e1.screenY === e2.screenY;
+  public static equalScreenPosition(e1: any, e2: any): boolean {
+    return e1 && e2 && e1.screenX === e2.screenX && e1.screenY === e2.screenY;
   }
 
   public constructor() {
@@ -68,7 +68,7 @@ export class CatGridDragService {
   public removeItemById(id: string) {
     this.removing = true;
     this.grids.forEach(grid => {
-      if (grid.items.map(item => item.id).includes(id)) {
+      if (grid.items.map(item => item.id).indexOf(id) > -1) {
         grid.removeItemById(id);
         this.removing = false;
         this.changeSubgridItemsConfig(grid.ngGrid._config.id, grid.items);
@@ -88,15 +88,14 @@ export class CatGridDragService {
   }
 
   public registerGrid(grid: CatGridComponent) {
-    const mouseMoveCombined = grid.onMouseMove$.merge(this.windowMouseMove$)
-      .distinct((a, b) => CatGridDragService.equalScreenPosition(a.event, b.event));
+    const mouseMoveCombined = grid.onMouseMove$.merge(this.windowMouseMove$);
     const dragCombined = mouseMoveCombined
       .withLatestFrom(this.itemDragged$, (x, y) => ({
         itemDragged: y,
         event: x.event,
         grid: x.grid
       }));
-    const outside = dragCombined.filter(it => it.grid == null && this.draggedItem);
+    const outside = dragCombined.filter(it => it.grid == null && !!this.draggedItem);
     const inside = dragCombined.filter(it => {
       if (!(it.grid != null && this.draggedItem)) {
         return false;
@@ -123,7 +122,6 @@ export class CatGridDragService {
       .filter(x => CatGridDragService.equalScreenPosition(x.release.event, x.move.event));
     grid.newItemAdd$
       .merge(this.windowMouseUp$)
-      .distinct((a, b) => CatGridDragService.equalScreenPosition(a.event, b.event))
       .filter(x => !x.grid)
       .subscribe((x) => {
         if (this.initialGrid && this.draggedItem) {
@@ -174,13 +172,13 @@ export class CatGridDragService {
     }
   }
 
-  public mouseMove(event) {
+  public mouseMove(event: any) {
     if (this.draggedItem) {
       this.draggedItem.move(event, this.posOffset);
     }
   }
 
-  public mouseUp(event) {
+  public mouseUp(event: any) {
     if (this.draggedItem) {
       this.itemReleased$.next({
         item: this.draggedItem,
@@ -189,7 +187,7 @@ export class CatGridDragService {
     }
   }
 
-  public dragStart(item: CatGridItemComponent, grid: CatGridComponent, event) {
+  public dragStart(item: CatGridItemComponent, grid: CatGridComponent, event: any) {
     event.preventDefault();
     this.draggedItem = item;
     this.initialGrid = grid;

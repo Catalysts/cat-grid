@@ -18,6 +18,7 @@ import {CatGridConfig, CONST_DEFAULT_CONFIG} from './cat-grid.config';
 import {CatGridValidationService} from '../cat-grid-validation.service';
 import {CatGridItemComponent} from '../cat-grid-item/cat-grid-item.component';
 import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
+import {DEFAULT_CONFIG} from "tslint/lib/configuration";
 
 @Directive({
   selector: '[catGrid]'
@@ -50,15 +51,15 @@ export class CatGridDirective implements OnInit {
 
   public minHeight: number = 100;
   public _items: CatGridItemComponent[] = [];
-  private _draggingItem: CatGridItemComponent = null;
-  private _resizingItem: CatGridItemComponent = null;
-  private _resizeDirection: string = null;
+  private _draggingItem: CatGridItemComponent;
+  private _resizingItem: CatGridItemComponent;
+  private _resizeDirection: string | null;
   private _maxCols: number = 0;
   private _maxRows: number = 0;
   private _visibleCols: number = 0;
   private _visibleRows: number = 0;
-  private _posOffset: { left: number, top: number } = null;
-  public _placeholderRef: ComponentRef<CatGridPlaceholderComponent> = null;
+  private _posOffset: { left: number, top: number };
+  public _placeholderRef: ComponentRef<CatGridPlaceholderComponent>;
   private _fixToGrid: boolean = false;
   private _autoResize: boolean = false;
   private _maintainRatio: boolean = false;
@@ -99,27 +100,61 @@ export class CatGridDirective implements OnInit {
 
   public setConfig(config: CatGridConfig): void {
     this._config = config;
-    this._autoResize = this._config.autoResize;
-    this._preferNew = this._config.preferNew;
-    this._maintainRatio = this._config.maintainRatio;
-    this._fixToGrid = this._config.fixToGrid;
-    this._visibleCols = Math.max(this._config.visibleCols, 0);
-    this._visibleRows = Math.max(this._config.visibleRows, 0);
+    if (this._config.autoResize !== undefined) {
+      this._autoResize = this._config.autoResize;
+    }
+    if (this._config.preferNew !== undefined) {
+      this._preferNew = this._config.preferNew;
+    }
+    if (this._config.maintainRatio !== undefined) {
+      this._maintainRatio = this._config.maintainRatio;
+    }
+    if (this._config.fixToGrid !== undefined) {
+      this._fixToGrid = this._config.fixToGrid;
+    }
+    if (this._config.visibleCols !== undefined) {
+      this._visibleCols = Math.max(this._config.visibleCols, 0);
+    }
+    if (this._config.visibleRows !== undefined) {
+      this._visibleRows = Math.max(this._config.visibleRows, 0);
+    }
+    if (this._config.margins !== undefined) {
+      this.setMargins(this._config.margins);
+    }
+    if (this._config.rowHeight !== undefined) {
+      this.rowHeight = this._config.rowHeight;
+    }
+    if (this._config.colWidth !== undefined) {
+      this.colWidth = this._config.colWidth;
+    }
+    if (this._config.resizable !== undefined) {
+      this.resizeEnable = this._config.resizable;
+    }
+    if (this._config.draggable !== undefined) {
+      this.dragEnable = this._config.draggable;
+    }
+    if (this._config.autoStyle !== undefined) {
+      this.autoStyle = this._config.autoStyle;
+    }
+    if (this._config.minWidth !== undefined) {
+      this.minWidth = this._config.minWidth;
+    }
+    if (this._config.minHeight !== undefined) {
+      this.minHeight = this._config.minHeight;
+    }
 
-    this.setMargins(this._config.margins);
-
-    this.rowHeight = this._config.rowHeight;
-    this.colWidth = this._config.colWidth;
-    this.resizeEnable = this._config.resizable;
-    this.dragEnable = this._config.draggable;
-    this.autoStyle = this._config.autoStyle;
-    this.minWidth = this._config.minWidth || CONST_DEFAULT_CONFIG.minWidth;
-    this.minHeight = this._config.minHeight || CONST_DEFAULT_CONFIG.minHeight;
-    this.minCols = Math.max(this._config.minCols, 1);
-    this.minRows = Math.max(this._config.minRows, 1);
-
-    this._maxCols = Math.max(this._config.maxCols, 0);
-    this._maxRows = Math.max(this._config.maxRows, 0);
+    if (this._config.minCols !== undefined) {
+      this.minCols = Math.max(this._config.minCols, 1);
+    }
+    if (this._config.minRows !== undefined) {
+      this.minRows = Math.max(this._config.minRows, 1);
+    }
+    if (this._config.maxCols !== undefined) {
+      this._maxCols = Math.max(this._config.maxCols, 0);
+    }
+    if (this._config.maxRows !== undefined) {
+      this._maxRows = Math.max(this._config.maxRows, 0);
+    }
 
     if (this._maintainRatio) {
       if (this.colWidth && this.rowHeight) {
@@ -152,9 +187,15 @@ export class CatGridDirective implements OnInit {
     if (this._maxRows > 0 && this.minRows > this._maxRows) {
       this.minRows = 1;
     }
+    let width = '100px',
+      height = '100px';
+    if (config.colWidth !== undefined && config.maxCols !== undefined) {
+      width = config.colWidth * config.maxCols + 'px';
+    }
 
-    const width = config.colWidth * config.maxCols + 'px';
-    const height = config.rowHeight * config.maxRows + 'px';
+    if (config.rowHeight !== undefined && config.maxRows !== undefined) {
+      height = config.rowHeight * config.maxRows + 'px';
+    }
 
     this.setSize(width, height);
   }
@@ -300,7 +341,7 @@ export class CatGridDirective implements OnInit {
         toRectangle(conf), toRectangle(itemConf)
       ));
 
-    function intersect(r1, r2) {
+    function intersect(r1: any, r2: any) {
       return !(r2.left > r1.right ||
       r2.right < r1.left ||
       r2.top > r1.bottom ||
@@ -453,7 +494,7 @@ export class CatGridDirective implements OnInit {
   }
 
   private _getItemFromPosition(position: { left: number, top: number }): CatGridItemComponent {
-    const isPositionInside = (size: {width: number, height: number}, pos: {left: number, top: number}) => {
+    const isPositionInside = (size: { width: number, height: number }, pos: { left: number, top: number }) => {
       return position.left > (pos.left + this.marginLeft) && position.left < (pos.left + this.marginLeft + size.width) &&
         position.top > (pos.top + this.marginTop) && position.top < (pos.top + this.marginTop + size.height);
     };
@@ -465,7 +506,7 @@ export class CatGridDirective implements OnInit {
     return this._getItemFromPosition(this._getMousePosition(e));
   }
 
-  public getGridPositionOfEvent(event, offset) {
+  public getGridPositionOfEvent(event: any, offset: any) {
     let {left, top} = this._getMousePosition(event);
     return this._calculateGridPosition(left - offset.left, top - offset.top);
   }

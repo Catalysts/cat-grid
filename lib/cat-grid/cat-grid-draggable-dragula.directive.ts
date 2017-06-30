@@ -10,7 +10,7 @@ import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
 export class CatGridDraggableDragulaDirective {
   @Input() private catGridDraggableDragula: CatGridItemConfig;
   @HostBinding('draggable') draggable: boolean = false;
-  @HostBinding('class') c;
+  @HostBinding('class') c: any;
 
   private dragging = false;
   private windowMouseMove$ = new Subject<MouseEvent>();
