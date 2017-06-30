@@ -4,13 +4,18 @@ export default {
   sourceMap: false,
   format: 'umd',
   moduleName: 'ng.cat-grid',
+  external: [
+    '@angular/core',
+    '@angular/common',
+    'rxjs/Rx',
+    'rxjs/util/isArray',
+    'ng2-dragula',
+  ],
   globals: {
     '@angular/core': 'ng.core',
-    'rxjs/Observable': 'Rx',
-    'rxjs/ReplaySubject': 'Rx',
-    'rxjs/add/operator/map': 'Rx.Observable.prototype',
-    'rxjs/add/operator/mergeMap': 'Rx.Observable.prototype',
-    'rxjs/add/observable/fromEvent': 'Rx.Observable',
-    'rxjs/add/observable/of': 'Rx.Observable'
+    '@angular/common': 'ng.common',
+    'rxjs/Rx': 'Rx',
+    'rxjs/util/isArray': 'Rx.util.isArray',
+    'ng2-dragula': 'ng2-dragula'
   }
 }

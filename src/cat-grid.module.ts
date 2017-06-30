@@ -1,12 +1,12 @@
-import {BrowserModule} from "@angular/platform-browser";
 import {NgModule} from "@angular/core";
 import {CatGridComponent} from "./cat-grid/cat-grid.component";
 import {CatGridDirective} from "./cat-grid/cat-grid.directive";
 import {CatGridPlaceholderComponent} from "./cat-grid-placeholder/cat-grid-placeholder.component";
 import {CatGridDraggableDragulaDirective} from "./cat-grid/cat-grid-draggable-dragula.directive";
 import {CatGridItemComponent} from "./cat-grid-item/cat-grid-item.component";
-import {DragulaModule} from "ng2-dragula/ng2-dragula";
+import {DragulaModule} from "ng2-dragula";
 import {CatGridDraggableDirective} from "./cat-grid/cat-grid-draggable.directive";
+import {CommonModule} from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -19,8 +19,8 @@ import {CatGridDraggableDirective} from "./cat-grid/cat-grid-draggable.directive
   ],
   entryComponents: [CatGridPlaceholderComponent],
   imports: [
-    BrowserModule,
     DragulaModule,
+    CommonModule
   ],
   exports: [
     CatGridDirective,

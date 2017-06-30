@@ -1,6 +1,6 @@
 import {Directive, HostListener, Input, HostBinding, ElementRef} from '@angular/core';
 import {CatGridDragService} from '../cat-grid-drag.service';
-import {DragulaService} from 'ng2-dragula/components/dragula.provider';
+import {DragulaService} from 'ng2-dragula';
 import {Subject} from 'rxjs/Rx';
 import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
 
