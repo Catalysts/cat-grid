@@ -236,9 +236,11 @@ export class CatGridItemComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public move(event: MouseEvent, offset: {left: number, top: number}) {
-    const parentTop = this.elementRef.nativeElement.parentElement.getBoundingClientRect().top + window.scrollY;
-    const parentLeft = this.elementRef.nativeElement.parentElement.getBoundingClientRect().left + window.scrollX;
-    this.setPosition(event.pageX - offset.left - parentLeft, event.pageY - offset.top - parentTop);
+    if (this.elementRef.nativeElement.parentElement) {
+      const parentTop = this.elementRef.nativeElement.parentElement.getBoundingClientRect().top + window.scrollY;
+      const parentLeft = this.elementRef.nativeElement.parentElement.getBoundingClientRect().left + window.scrollX;
+      this.setPosition(event.pageX - offset.left - parentLeft, event.pageY - offset.top - parentTop);
+    }
   }
 
   public setDimensions(w: number, h: number): void {

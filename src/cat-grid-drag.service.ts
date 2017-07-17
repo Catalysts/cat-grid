@@ -143,7 +143,7 @@ export class CatGridDragService {
       grid.addItem(v.newConfig);
       this.itemAdded$.next(this.getPlacedItems());
     });
-    this.itemDragged$.subscribe(v => this.mouseMove(v.event.event));
+    this.itemDragged$.throttleTime(1).subscribe(v => this.mouseMove(v.event.event));
     this.grids.push(grid);
     return {
       inside,
