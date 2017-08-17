@@ -79,8 +79,8 @@ export class CatGridDirective implements OnInit {
 
   get pagePosition() {
     return {
-      pageX: this._ngEl.nativeElement.offsetLeft,
-      pageY: this._ngEl.nativeElement.offsetTop
+      pageX: this._ngEl.nativeElement.offsetLeft + this._ngEl.nativeElement.scrollLeft,
+      pageY: this._ngEl.nativeElement.offsetTop + this._ngEl.nativeElement.scrollTop
     };
   }
 
