@@ -1,22 +1,12 @@
-import {
-  Component,
-  OnInit,
-  HostListener,
-  Output,
-  Input,
-  OnDestroy,
-  EventEmitter,
-  ViewChild,
-  ElementRef, HostBinding
-} from '@angular/core';
-import {Subject, Observable, Subscription} from 'rxjs/Rx';
-import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
-import {CatGridConfig} from './cat-grid.config';
-import {CatGridDirective} from './cat-grid.directive';
-import {CatGridDragService, ItemDragEvent} from '../cat-grid-drag.service';
-import {CatGridValidationService} from '../cat-grid-validation.service';
-import {CatGridItemComponent} from '../cat-grid-item/cat-grid-item.component';
-import {intersect, toRectangle} from './utils';
+import { Component, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs/Rx';
+import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
+import { CatGridConfig } from './cat-grid.config';
+import { CatGridDirective } from './cat-grid.directive';
+import { CatGridDragService } from '../cat-grid-drag.service';
+import { CatGridValidationService } from '../cat-grid-validation.service';
+import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
+import { intersect, toRectangle } from './utils';
 
 @Component({
   selector: 'cat-grid',
@@ -43,7 +33,7 @@ export class CatGridComponent implements OnInit, OnDestroy {
   items: CatGridItemConfig[] = [];
 
   @HostBinding('style.cursor')
-  cursor: string = 'auto';
+  cursor = 'auto';
 
   private destroyed$ = new Subject();
   newItemAdd$: Subject<any> = new Subject();
