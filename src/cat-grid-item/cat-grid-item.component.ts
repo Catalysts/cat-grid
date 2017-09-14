@@ -32,6 +32,8 @@ interface Position {
 })
 export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, AfterViewInit {
   @Input() config: CatGridItemConfig;
+  @Input() x: number;
+  @Input() y: number;
   @Input() colWidth: number;
   @Input() rowHeight: number;
 
@@ -81,10 +83,12 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.mouseUp$ = Observable.fromEvent(this.elementRef.nativeElement, 'mouseup');
     this.mouseMove$ = Observable.fromEvent(document, 'mousemove');
 
+    this.setSize(this.config.colSpan * this.colWidth, this.config.rowSpan * this.rowHeight);
+
     this.dragStart$
       .takeUntil(this.destroyed$)
-      .subscribe(() => {
-        this.catGridDragService.startDrag(this.config, this.elementRef.nativeElement.cloneNode(true));
+      .subscribe((e: MouseEvent) => {
+        this.catGridDragService.startDrag(this.config, e, this.elementRef.nativeElement.cloneNode(true));
       });
 
     this.resize$ = this.resizeStart$.flatMap(() => this.mouseMove$.map((mm: MouseEvent) => {
@@ -124,8 +128,8 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     if (!config) {
       return;
     }
-    if (config.col || config.row) {
-      this.setPosition(config.col * this.colWidth, config.row * this.rowHeight);
+    if (changes.x || changes.y) {
+      this.setPosition(this.x, this.y);
     }
     if (config.colSpan || config.rowSpan) {
       this.setSize(config.colSpan * this.colWidth, config.rowSpan * this.rowHeight);
@@ -182,6 +186,8 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   setSize(width: number, height: number) {
     this.elemWidth = width;
     this.elemHeight = height;
+
+    console.log(this.elemWidth);
   }
 
   injectComponent(): void {

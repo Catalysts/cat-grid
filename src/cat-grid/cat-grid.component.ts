@@ -1,44 +1,63 @@
-import { Component, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
 import { CatGridConfig } from './cat-grid.config';
 import { CatGridDragService } from '../cat-grid-drag.service';
 import { CatGridValidationService } from '../cat-grid-validation.service';
-import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
 import { intersect, toRectangle } from './utils';
 
 @Component({
   selector: 'cat-grid',
   template: `
-    <div (onResizeStop)="resizeFinished($event)">
-      <cat-grid-item [config]="item"
-                     [colWidth]="config.colWidth"
-                     [rowHeight]="config.rowHeight"
-                     *ngFor="let item of items">
-      </cat-grid-item>
-    </div>
+    <cat-grid-item [config]="item"
+                   [x]="getXForItem(item)"
+                   [y]="getYForItem(item)"
+                   [colWidth]="config.colWidth"
+                   [rowHeight]="config.rowHeight"
+                   *ngFor="let item of items">
+    </cat-grid-item>
+    <cat-grid-placeholder [valid]="placeholderConfig.valid"
+                          [height]="placeholderConfig.height"
+                          [width]="placeholderConfig.width"
+                          [left]="placeholderConfig.left"
+                          [top]="placeholderConfig.top"></cat-grid-placeholder>
   `,
 })
 export class CatGridComponent implements OnChanges, OnDestroy {
-  static GRID_POSITIONS_OFFSET = 1;
-
-  @Output() itemResizeStop = new EventEmitter<CatGridItemConfig>();
   @Input() config: CatGridConfig;
   @Input() items: CatGridItemConfig[] = [];
 
+  @Output() onItemsChange  = new EventEmitter();
+
   @HostBinding('style.cursor')
   cursor = 'auto';
+
+  @HostBinding('style.display')
+  display = 'inline-block';
 
   @HostBinding('style.width.px')
   width = 100;
 
   @HostBinding('style.height.px')
-  height: 100;
+  height = 100;
 
-  private destroyed$ = new Subject();
-  newItemAdd$: Subject<any> = new Subject();
+  destroyed$ = new Subject();
+  placeholderConfig: {
+    valid: boolean | null,
+    width: number,
+    height: number,
+    left: number,
+    top: number,
+  } = {
+    valid: null,
+    width: 0,
+    height: 0,
+    left: 0,
+    top: 0
+  };
 
-  constructor(private gridDragService: CatGridDragService,
+  constructor(private elementRef: ElementRef,
+              private gridDragService: CatGridDragService,
               private gridPositionService: CatGridValidationService) {
   }
 
@@ -51,14 +70,14 @@ export class CatGridComponent implements OnChanges, OnDestroy {
     const config = changes.config;
 
     if (config) {
-
+      this.setSize();
     }
   }
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(e: MouseEvent) {
     if (!!this.gridDragService.dragConfig) {
-      this.showPlaceholder();
+      this.showPlaceholder(this.gridDragService.dragConfig, e);
     }
   }
 
@@ -69,9 +88,10 @@ export class CatGridComponent implements OnChanges, OnDestroy {
 
   @HostListener('mouseup', ['$event'])
   onMouseUp(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
     if (!!this.gridDragService.dragConfig) {
       const config = this.gridDragService.dragConfig;
-      console.log(config);
       if (this.validPosition(config, e)) {
         // add to grid
         // remove from others
@@ -82,8 +102,33 @@ export class CatGridComponent implements OnChanges, OnDestroy {
     }
   }
 
-  showPlaceholder() {
+  getXForItem(config: CatGridItemConfig) {
+    return (config.col - 1) * this.config.colWidth;
+  }
 
+  getYForItem(config: CatGridItemConfig) {
+    return (config.row - 1) * this.config.rowHeight;
+  }
+
+  setSize() {
+    this.width = this.config.cols * this.config.colWidth;
+    this.height = this.config.rows * this.config.rowHeight;
+  }
+
+  showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
+    this.placeholderConfig = {
+      valid: true,
+      width: config.colSpan * this.config.colWidth,
+      height: config.rowSpan * this.config.rowHeight,
+      left: this.getXForItem(this.itemConfigFromEvent(config, e)),
+      top: this.getYForItem(this.itemConfigFromEvent(config, e)),
+    }
+  }
+
+  hidePlaceholder() {
+    if (this.placeholderConfig) {
+      this.placeholderConfig.valid = null;
+    }
   }
 
   private validPosition(item: CatGridItemConfig, event: MouseEvent) {
@@ -92,31 +137,29 @@ export class CatGridComponent implements OnChanges, OnDestroy {
       && !this.hasCollisions(item);
   }
 
-  resizeFinished(itemComponent: CatGridItemComponent) {
-    this.itemResizeStop.emit(itemComponent.config);
-    this.items.push(itemComponent.config);
-    const ids = this.items.map(i => i.id);
-    this.items = this.items.filter((item, i, arr) => ids.indexOf(item.id) === i);
+  getMousePos(event: MouseEvent) {
+    const rect = this.elementRef.nativeElement.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
   }
 
-  private hidePlaceholder() {
+  getGridPosition(x: number, y: number) {
+    return {
+      col: Math.floor(x / this.config.colWidth) + 1,
+      row: Math.floor(y / this.config.rowHeight) + 1,
+    }
   }
 
-  private itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
-    // const refPos = this.ngGrid._ngEl.nativeElement.getBoundingClientRect();
-    // const left = event.clientX - refPos.left;
-    // const top = event.clientY - refPos.top;
-    // let positionX = left;
-    // let positionY = top;
-    // if (this.gridDragService.posOffset.left && this.gridDragService.posOffset.top) {
-    //   positionX -= this.gridDragService.posOffset.left;
-    //   positionY -= this.gridDragService.posOffset.top;
-    // }
-    // const {col, row} = this.ngGrid._calculateGridPosition(positionX, positionY);
-    return Object.assign({}, config, {});
+  itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
+    const {x, y} = this.getMousePos(event);
+    const {col, row} = this.getGridPosition(x, y);
+    console.log(col, row);
+    return Object.assign({}, config, {col, row});
   }
 
-  private hasCollisions(itemConf: CatGridItemConfig): boolean {
+  hasCollisions(itemConf: CatGridItemConfig): boolean {
     return this.items.filter(c => c.id !== itemConf.id)
       .some((conf: CatGridItemConfig) => intersect(toRectangle(conf), toRectangle(itemConf)));
   }

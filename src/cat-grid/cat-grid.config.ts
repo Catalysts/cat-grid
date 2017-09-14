@@ -7,8 +7,8 @@ export class CatGridConfig {
   maxRows?: number;
   visibleCols?: number;
   visibleRows?: number;
-  minCols?: number;
-  minRows?: number;
+  cols?: number;
+  rows?: number;
   colWidth?: number;
   rowHeight?: number;
   minWidth?: number;

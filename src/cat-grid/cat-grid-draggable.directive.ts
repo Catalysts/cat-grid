@@ -7,15 +7,16 @@ import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
 })
 export class CatGridDraggableDirective {
   @Input() catGridDraggable: CatGridItemConfig;
-  @HostBinding('draggable') draggable = true;
+  // @HostBinding('draggable') draggable = true;
 
   constructor(private gridDragService: CatGridDragService) {
   }
 
-  @HostListener('dragstart', ['$event'])
-  private dragStart(e: DragEvent) {
+  @HostListener('mousedown', ['$event'])
+  private dragStart(e: MouseEvent) {
     this.gridDragService.startDrag(
       this.catGridDraggable,
+      e,
       (event.target as Node).cloneNode(true) as HTMLElement
     );
   }
