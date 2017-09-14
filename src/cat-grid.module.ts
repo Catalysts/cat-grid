@@ -1,16 +1,14 @@
-import {NgModule} from "@angular/core";
-import {CatGridComponent} from "./cat-grid/cat-grid.component";
-import {CatGridDirective} from "./cat-grid/cat-grid.directive";
-import {CatGridPlaceholderComponent} from "./cat-grid-placeholder/cat-grid-placeholder.component";
-import {CatGridDraggableDragulaDirective} from "./cat-grid/cat-grid-draggable-dragula.directive";
-import {CatGridItemComponent} from "./cat-grid-item/cat-grid-item.component";
-import {DragulaModule} from "ng2-dragula";
-import {CatGridDraggableDirective} from "./cat-grid/cat-grid-draggable.directive";
-import {CommonModule} from "@angular/common";
+import { NgModule } from '@angular/core';
+import { CatGridComponent } from './cat-grid/cat-grid.component';
+import { CatGridPlaceholderComponent } from './cat-grid-placeholder/cat-grid-placeholder.component';
+import { CatGridDraggableDragulaDirective } from './cat-grid/cat-grid-draggable-dragula.directive';
+import { CatGridItemComponent } from './cat-grid-item/cat-grid-item.component';
+import { DragulaModule } from 'ng2-dragula';
+import { CatGridDraggableDirective } from './cat-grid/cat-grid-draggable.directive';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [
-    CatGridDirective,
     CatGridComponent,
     CatGridPlaceholderComponent,
     CatGridDraggableDragulaDirective,
@@ -23,7 +21,6 @@ import {CommonModule} from "@angular/common";
     CommonModule
   ],
   exports: [
-    CatGridDirective,
     CatGridComponent,
     CatGridPlaceholderComponent,
     CatGridDraggableDragulaDirective,
@@ -31,8 +28,7 @@ import {CommonModule} from "@angular/common";
     CatGridItemComponent,
     DragulaModule
   ],
-  providers: [
-  ],
+  providers: [],
 })
 export class CatGridModule {
 }

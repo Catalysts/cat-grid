@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
-import {CatGridItemConfig} from "./cat-grid-item/cat-grid-item.config";
-import {CatGridConfig} from "./cat-grid/cat-grid.config";
+import {CatGridItemConfig} from './cat-grid-item/cat-grid-item.config';
+import {CatGridConfig} from './cat-grid/cat-grid.config';
 
 export interface ConditionFn {
   (gridX: number, gridY: number, gridItem: CatGridItemConfig, hoveredGrid: CatGridConfig): boolean;

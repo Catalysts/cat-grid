@@ -9,20 +9,11 @@ export interface ItemDragEvent {
 
 @Injectable()
 export class CatGridDragService {
-  private windowMouseMove$: Observable<any>;
-  private windowMouseUp$: Observable<any>;
-
-  private dragging$ = new Subject<ItemDragEvent>();
-  private drop$ = new Subject<ItemDragEvent>();
-
-  public posOffset: any = {};
+  windowMouseMove$: Observable<MouseEvent>;
+  windowMouseUp$: Observable<MouseEvent>;
 
   dragConfig: CatGridItemConfig | null = null;
   dragNode: HTMLElement | null = null;
-
-  public static equalScreenPosition(e1: any, e2: any): boolean {
-    return e1 && e2 && e1.screenX === e2.screenX && e1.screenY === e2.screenY;
-  }
 
   public constructor() {
     this.windowMouseMove$ = Observable.fromEvent(window, 'mousemove');
@@ -48,24 +39,11 @@ export class CatGridDragService {
   }
 
   public stopDrag() {
-    this.dragConfig = null;
-    this.dragNode = null;
-
     if (this.dragNode !== null) {
       document.body.removeChild(this.dragNode);
     }
-  }
 
-  public draggingObservable(): Observable<ItemDragEvent> {
-    return this.dragging$.asObservable();
-  }
-
-  public dropObservable(): Observable<ItemDragEvent> {
-    return this.drop$.asObservable();
-  }
-
-  public addDraggingSource(dragSource$: Observable<ItemDragEvent>, dropSource$: Observable<ItemDragEvent>) {
-    dragSource$.subscribe(e => this.dragging$.next(e));
-    dropSource$.subscribe(e => this.drop$.next(e));
+    this.dragConfig = null;
+    this.dragNode = null;
   }
 }

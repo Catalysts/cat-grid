@@ -7,6 +7,9 @@
 /dev
 /npm
 !/npm/package.json
+/src/**/*.js
+/src/**/*.map
+
 
 # dependencies
 /node_modules

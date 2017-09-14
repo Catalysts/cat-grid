@@ -32,6 +32,8 @@ interface Position {
 })
 export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, AfterViewInit {
   @Input() config: CatGridItemConfig;
+  @Input() colWidth: number;
+  @Input() rowHeight: number;
 
   @Output() onResize = new EventEmitter<CatGridItemEvent>();
   @Output() onResizeStop = new EventEmitter<CatGridItemEvent>();
@@ -88,8 +90,8 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.resize$ = this.resizeStart$.flatMap(() => this.mouseMove$.map((mm: MouseEvent) => {
       mm.preventDefault();
 
-      const newWidth = Math.max(mm.clientX - this.config.x, 100);
-      const newHeight = Math.max(mm.clientY - this.config.y, 100);
+      const newWidth = Math.max(mm.clientX - this.config.col, 100);
+      const newHeight = Math.max(mm.clientY - this.config.row, 100);
 
       return {
         newWidth,
@@ -98,10 +100,10 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     })
       .takeUntil(this.mouseUp$)
       .do(
-        size => this.onResize.emit({x: this.config.x, y: this.config.y, width: size.newWidth, height: size.newHeight}),
+        size => this.onResize.emit({x: this.config.col, y: this.config.row, width: size.newWidth, height: size.newHeight}),
         null,
         () => {
-          this.onResizeStop.emit({x: this.config.x, y: this.config.y, width: this.elemWidth, height: this.elemHeight});
+          this.onResizeStop.emit({x: this.config.col, y: this.config.row, width: this.elemWidth, height: this.elemHeight});
 
           if (this.componentRef.instance.catGridItemLoaded) {
             this.componentRef.instance.catGridItemLoaded(this.config);
@@ -118,11 +120,15 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   ngOnChanges(changes: any) {
-    if (changes.x || changes.y) {
-      this.setPosition(this.config.x, this.config.y);
+    const config: CatGridItemConfig = changes.config;
+    if (!config) {
+      return;
     }
-    if (changes.width || changes.height) {
-      this.setSize(this.config.width, this.config.height);
+    if (config.col || config.row) {
+      this.setPosition(config.col * this.colWidth, config.row * this.rowHeight);
+    }
+    if (config.colSpan || config.rowSpan) {
+      this.setSize(config.colSpan * this.colWidth, config.rowSpan * this.rowHeight);
     }
   }
 
@@ -157,12 +163,12 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     if (!this.config.resizable) {
       return null;
     }
-    if (this.config.x < this.elemWidth && this.config.x > this.elemWidth - this.config.borderSize
-      && this.config.y < this.elemHeight && this.config.y > this.elemHeight - this.config.borderSize) {
+    if (this.config.col < this.elemWidth && this.config.col > this.elemWidth - this.config.borderSize
+      && this.config.row < this.elemHeight && this.config.row > this.elemHeight - this.config.borderSize) {
       return 'both';
-    } else if (this.config.x < this.elemWidth && this.config.x > this.elemWidth - this.config.borderSize) {
+    } else if (this.config.col < this.elemWidth && this.config.col > this.elemWidth - this.config.borderSize) {
       return 'width';
-    } else if (this.config.y < this.elemHeight && this.config.y > this.elemHeight - this.config.borderSize) {
+    } else if (this.config.row < this.elemHeight && this.config.row > this.elemHeight - this.config.borderSize) {
       return 'height';
     }
 

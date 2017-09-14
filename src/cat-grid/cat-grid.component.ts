@@ -1,8 +1,7 @@
-import { Component, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, Output, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
 import { CatGridConfig } from './cat-grid.config';
-import { CatGridDirective } from './cat-grid.directive';
 import { CatGridDragService } from '../cat-grid-drag.service';
 import { CatGridValidationService } from '../cat-grid-validation.service';
 import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
@@ -11,29 +10,30 @@ import { intersect, toRectangle } from './utils';
 @Component({
   selector: 'cat-grid',
   template: `
-    <div [catGrid]="config" (onResizeStop)="resizeFinished($event)">
-      <cat-grid-item [item]="item"
+    <div (onResizeStop)="resizeFinished($event)">
+      <cat-grid-item [config]="item"
+                     [colWidth]="config.colWidth"
+                     [rowHeight]="config.rowHeight"
                      *ngFor="let item of items">
       </cat-grid-item>
     </div>
   `,
 })
-export class CatGridComponent implements OnInit, OnDestroy {
+export class CatGridComponent implements OnChanges, OnDestroy {
   static GRID_POSITIONS_OFFSET = 1;
 
   @Output() itemResizeStop = new EventEmitter<CatGridItemConfig>();
-
-  @ViewChild(CatGridDirective)
-  ngGrid: CatGridDirective;
-
-  @Input()
-  config: CatGridConfig;
-
-  @Input()
-  items: CatGridItemConfig[] = [];
+  @Input() config: CatGridConfig;
+  @Input() items: CatGridItemConfig[] = [];
 
   @HostBinding('style.cursor')
   cursor = 'auto';
+
+  @HostBinding('style.width.px')
+  width = 100;
+
+  @HostBinding('style.height.px')
+  height: 100;
 
   private destroyed$ = new Subject();
   newItemAdd$: Subject<any> = new Subject();
@@ -42,15 +42,48 @@ export class CatGridComponent implements OnInit, OnDestroy {
               private gridPositionService: CatGridValidationService) {
   }
 
-  ngOnInit() {
-    const {inside, outside, release} = this.gridDragService.registerGrid(this);
-  }
-
-  ngOnDestroy(): any {
+  ngOnDestroy() {
     this.destroyed$.next();
     this.destroyed$.unsubscribe();
+  }
 
-    this.gridDragService.unregisterGrid(this);
+  ngOnChanges(changes: any) {
+    const config = changes.config;
+
+    if (config) {
+
+    }
+  }
+
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(e: MouseEvent) {
+    if (!!this.gridDragService.dragConfig) {
+      this.showPlaceholder();
+    }
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave() {
+    this.hidePlaceholder();
+  }
+
+  @HostListener('mouseup', ['$event'])
+  onMouseUp(e: MouseEvent) {
+    if (!!this.gridDragService.dragConfig) {
+      const config = this.gridDragService.dragConfig;
+      console.log(config);
+      if (this.validPosition(config, e)) {
+        // add to grid
+        // remove from others
+      }
+
+      this.gridDragService.stopDrag();
+      this.hidePlaceholder();
+    }
+  }
+
+  showPlaceholder() {
+
   }
 
   private validPosition(item: CatGridItemConfig, event: MouseEvent) {
@@ -67,37 +100,24 @@ export class CatGridComponent implements OnInit, OnDestroy {
   }
 
   private hidePlaceholder() {
-    this.ngGrid._placeholderRef.instance.setSize(0, 0);
-    if (!this.ngGrid._placeholderRef.instance.valid) {
-      this.cursor = 'no-drop';
-    } else {
-      this.cursor = 'auto';
-    }
   }
 
   private itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
-    const refPos = this.ngGrid._ngEl.nativeElement.getBoundingClientRect();
-    const left = event.clientX - refPos.left;
-    const top = event.clientY - refPos.top;
-    let positionX = left;
-    let positionY = top;
-    if (this.gridDragService.posOffset.left && this.gridDragService.posOffset.top) {
-      positionX -= this.gridDragService.posOffset.left;
-      positionY -= this.gridDragService.posOffset.top;
-    }
-    const {col, row} = this.ngGrid._calculateGridPosition(positionX, positionY);
-    return Object.assign({}, config, {col, row});
+    // const refPos = this.ngGrid._ngEl.nativeElement.getBoundingClientRect();
+    // const left = event.clientX - refPos.left;
+    // const top = event.clientY - refPos.top;
+    // let positionX = left;
+    // let positionY = top;
+    // if (this.gridDragService.posOffset.left && this.gridDragService.posOffset.top) {
+    //   positionX -= this.gridDragService.posOffset.left;
+    //   positionY -= this.gridDragService.posOffset.top;
+    // }
+    // const {col, row} = this.ngGrid._calculateGridPosition(positionX, positionY);
+    return Object.assign({}, config, {});
   }
 
   private hasCollisions(itemConf: CatGridItemConfig): boolean {
     return this.items.filter(c => c.id !== itemConf.id)
       .some((conf: CatGridItemConfig) => intersect(toRectangle(conf), toRectangle(itemConf)));
-  }
-
-  private isOutsideGrid(item: CatGridItemConfig, gridSize: any): boolean {
-    const {col, row} = item;
-    const {sizex, sizey} = item;
-    return (col + sizex - CatGridComponent.GRID_POSITIONS_OFFSET > gridSize.columns)
-      || (row + sizey - CatGridComponent.GRID_POSITIONS_OFFSET > gridSize.rows);
   }
 }

@@ -9,7 +9,7 @@ import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
 })
 export class CatGridDraggableDragulaDirective {
   @Input() private catGridDraggableDragula: CatGridItemConfig;
-  @HostBinding('draggable') draggable: boolean = false;
+  @HostBinding('draggable') draggable = false;
   @HostBinding('class') c: any;
 
   private dragging = false;
@@ -37,7 +37,7 @@ export class CatGridDraggableDragulaDirective {
         event,
         item: this.catGridDraggableDragula
       }));
-    this.gridDragService.addDraggingSource(dragObservable, dropObservable);
+    // this.gridDragService.addDraggingSource(dragObservable, dropObservable);
   }
 
   @HostListener('window:mousemove', ['$event'])
