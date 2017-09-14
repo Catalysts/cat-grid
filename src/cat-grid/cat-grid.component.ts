@@ -131,7 +131,7 @@ export class CatGridComponent implements OnChanges, OnDestroy {
     }
   }
 
-  private validPosition(item: CatGridItemConfig, event: MouseEvent) {
+  validPosition(item: CatGridItemConfig, event: MouseEvent) {
     const conf = this.itemConfigFromEvent(item, event);
     return this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, conf, this.config)
       && !this.hasCollisions(item);
@@ -155,7 +155,6 @@ export class CatGridComponent implements OnChanges, OnDestroy {
   itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
     const {x, y} = this.getMousePos(event);
     const {col, row} = this.getGridPosition(x, y);
-    console.log(col, row);
     return Object.assign({}, config, {col, row});
   }
 
