@@ -1,5 +1,7 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ComponentFactoryResolver,
   ComponentRef,
@@ -21,14 +23,10 @@ import { Subject } from 'rxjs/Subject';
 import { CatGridItemConfig } from './cat-grid-item.config';
 import { CatGridDragService } from '../cat-grid-drag.service';
 
-interface Position {
-  left: number;
-  top: number;
-}
-
 @Component({
   selector: 'cat-grid-item',
   template: '<ng-template #componentContainer></ng-template>',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, AfterViewInit {
   @Input() config: CatGridItemConfig;
@@ -69,6 +67,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
   constructor(private elementRef: ElementRef,
               private renderer: Renderer2,
+              private changeDetectorRef: ChangeDetectorRef,
               private catGridDragService: CatGridDragService,
               private componentFactoryResolver: ComponentFactoryResolver) {
   }
@@ -90,7 +89,8 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
       .subscribe((e: MouseEvent) => {
         this.catGridDragService.startDrag(this.config, e, this.elementRef.nativeElement);
         // hide the item with a delay
-        setTimeout(() => this.renderer.setStyle(this.elementRef.nativeElement, 'display', 'none'), 50);
+        this.hide();
+        this.changeDetectorRef.markForCheck();
       });
 
     this.resize$ = this.resizeStart$.flatMap(() => this.mouseMove$.map((mm: MouseEvent) => {
@@ -114,6 +114,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
           if (this.componentRef.instance.catGridItemLoaded) {
             this.componentRef.instance.catGridItemLoaded(this.config);
           }
+          this.changeDetectorRef.markForCheck();
         }
       ));
 
@@ -121,7 +122,8 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
       .takeUntil(this.destroyed$)
       .subscribe(size => {
         this.setResizeCursor();
-        this.setSize(size.newWidth, size.newHeight)
+        this.setSize(size.newWidth, size.newHeight);
+        this.changeDetectorRef.markForCheck();
       });
   }
 
@@ -165,6 +167,14 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     }
   }
 
+  hide() {
+    this.renderer.setStyle(this.elementRef.nativeElement, 'visibility', 'hidden');
+  }
+
+  show() {
+    this.renderer.setStyle(this.elementRef.nativeElement, 'visibility', 'visible');
+  }
+
   canResize(): string | null {
     if (!this.config.resizable) {
       return null;
@@ -188,8 +198,6 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   setSize(width: number, height: number) {
     this.elemWidth = width;
     this.elemHeight = height;
-
-    console.log(this.elemWidth);
   }
 
   injectComponent(): void {
@@ -205,5 +213,6 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     }
 
     this.componentRef.changeDetectorRef.detectChanges();
+    this.changeDetectorRef.markForCheck();
   }
 }

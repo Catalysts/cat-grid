@@ -1,6 +1,19 @@
 import {
-  Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, Output,
-  ViewChild
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren
 } from '@angular/core';
 import { Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
@@ -9,6 +22,7 @@ import { CatGridDragService } from '../cat-grid-drag.service';
 import { CatGridValidationService } from '../cat-grid-validation.service';
 import { intersect, toRectangle } from './utils';
 import { CatGridPlaceholderComponent } from '../cat-grid-placeholder/cat-grid-placeholder.component';
+import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
 
 @Component({
   selector: 'cat-grid',
@@ -26,9 +40,10 @@ import { CatGridPlaceholderComponent } from '../cat-grid-placeholder/cat-grid-pl
     :host {
       display: inline-block;
     }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CatGridComponent implements OnChanges, OnDestroy {
+export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   @Input() config: CatGridConfig;
   @Input() items: CatGridItemConfig[] = [];
   @Output() onItemsChange = new EventEmitter();
@@ -36,12 +51,35 @@ export class CatGridComponent implements OnChanges, OnDestroy {
   @HostBinding('style.width.px') width = 100;
   @HostBinding('style.height.px') height = 100;
   @ViewChild(CatGridPlaceholderComponent) placeholder: CatGridPlaceholderComponent;
+  @ViewChildren(CatGridItemComponent) itemsComponents: QueryList<CatGridItemComponent>;
 
   destroyed$ = new Subject();
+  droppedItem: CatGridItemConfig | null = null;
 
   constructor(private elementRef: ElementRef,
+              private changeDetectorRef: ChangeDetectorRef,
               private gridDragService: CatGridDragService,
               private gridPositionService: CatGridValidationService) {
+  }
+
+  ngOnInit() {
+    this.gridDragService.itemDroppedObservable()
+      .subscribe(droppedItem => {
+        if (droppedItem) {
+          const index = this.items.findIndex(item => item.id === droppedItem.id);
+          if (index > -1) {
+            this.items.splice(index, 1);
+          }
+
+          if (this.droppedItem && this.droppedItem.id === droppedItem.id) {
+            this.items.push(this.droppedItem);
+            this.droppedItem = null;
+          }
+        } else {
+          this.itemsComponents.forEach(item => item.show());
+        }
+        this.changeDetectorRef.markForCheck();
+      });
   }
 
   ngOnDestroy() {
@@ -74,10 +112,12 @@ export class CatGridComponent implements OnChanges, OnDestroy {
     e.preventDefault();
     e.stopPropagation();
     if (!!this.gridDragService.dragConfig) {
-      const config = this.gridDragService.dragConfig;
+      const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e);
       if (this.validPosition(config)) {
-        // add to grid
-        // remove from others
+        this.droppedItem = config;
+        this.gridDragService.stopDrag();
+
+        this.gridDragService.itemDropped(this.droppedItem);
       }
 
       this.gridDragService.stopDrag();

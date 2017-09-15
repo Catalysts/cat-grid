@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
+import { Subject } from 'rxjs/Subject';
 
 /**
  * Angular service used to control the dragging.
@@ -15,6 +16,7 @@ import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
 export class CatGridDragService {
   windowMouseMove$: Observable<MouseEvent>;
   windowMouseUp$: Observable<MouseEvent>;
+  droppedItem$: Subject<CatGridItemConfig | null>;
 
   dragConfig: CatGridItemConfig | null = null;
   dragNode: HTMLElement | null = null;
@@ -26,7 +28,7 @@ export class CatGridDragService {
     top: number,
   };
 
-  public constructor() {
+  constructor() {
     this.windowMouseMove$ = Observable.fromEvent(window, 'mousemove');
     this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup').do(() => this.stopDrag());
   }
@@ -39,7 +41,7 @@ export class CatGridDragService {
    * @param {MouseEvent} e - mouse event which started the drag.
    * @param {HTMLElement} node - the node of the element being dragged (used for copying it to the body).
    */
-  public startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
+  startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
     this.dragConfig = config;
 
     if (node !== null) {
@@ -74,12 +76,20 @@ export class CatGridDragService {
   /**
    * Clears the current dragging element and the configuration stored.
    */
-  public stopDrag() {
+  stopDrag() {
     if (!!this.dragNode) {
       document.body.removeChild(this.dragNode);
     }
 
     this.dragConfig = null;
     this.dragNode = null;
+  }
+
+  itemDropped(item: CatGridItemConfig | null) {
+    this.droppedItem$.next(item);
+  }
+
+  itemDroppedObservable() {
+    return this.droppedItem$.asObservable();
   }
 }
