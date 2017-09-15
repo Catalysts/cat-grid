@@ -17,7 +17,7 @@ export class CatGridDraggableDirective {
     this.gridDragService.startDrag(
       this.catGridDraggable,
       e,
-      (event.target as Node).cloneNode(true) as HTMLElement
+      event.target as HTMLElement
     );
   }
 }

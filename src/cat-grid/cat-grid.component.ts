@@ -1,10 +1,14 @@
-import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+import {
+  Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, Output,
+  ViewChild
+} from '@angular/core';
 import { Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
 import { CatGridConfig } from './cat-grid.config';
 import { CatGridDragService } from '../cat-grid-drag.service';
 import { CatGridValidationService } from '../cat-grid-validation.service';
 import { intersect, toRectangle } from './utils';
+import { CatGridPlaceholderComponent } from '../cat-grid-placeholder/cat-grid-placeholder.component';
 
 @Component({
   selector: 'cat-grid',
@@ -16,45 +20,24 @@ import { intersect, toRectangle } from './utils';
                    [rowHeight]="config.rowHeight"
                    *ngFor="let item of items">
     </cat-grid-item>
-    <cat-grid-placeholder [valid]="placeholderConfig.valid"
-                          [height]="placeholderConfig.height"
-                          [width]="placeholderConfig.width"
-                          [left]="placeholderConfig.left"
-                          [top]="placeholderConfig.top"></cat-grid-placeholder>
+    <cat-grid-placeholder class="grid-placeholder"></cat-grid-placeholder>
   `,
+  styles: [`
+    :host {
+      display: inline-block;
+    }
+  `]
 })
 export class CatGridComponent implements OnChanges, OnDestroy {
   @Input() config: CatGridConfig;
   @Input() items: CatGridItemConfig[] = [];
-
-  @Output() onItemsChange  = new EventEmitter();
-
-  @HostBinding('style.cursor')
-  cursor = 'auto';
-
-  @HostBinding('style.display')
-  display = 'inline-block';
-
-  @HostBinding('style.width.px')
-  width = 100;
-
-  @HostBinding('style.height.px')
-  height = 100;
+  @Output() onItemsChange = new EventEmitter();
+  @HostBinding('style.cursor') cursor = 'auto';
+  @HostBinding('style.width.px') width = 100;
+  @HostBinding('style.height.px') height = 100;
+  @ViewChild(CatGridPlaceholderComponent) placeholder: CatGridPlaceholderComponent;
 
   destroyed$ = new Subject();
-  placeholderConfig: {
-    valid: boolean | null,
-    width: number,
-    height: number,
-    left: number,
-    top: number,
-  } = {
-    valid: null,
-    width: 0,
-    height: 0,
-    left: 0,
-    top: 0
-  };
 
   constructor(private elementRef: ElementRef,
               private gridDragService: CatGridDragService,
@@ -116,19 +99,25 @@ export class CatGridComponent implements OnChanges, OnDestroy {
   }
 
   showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
-    this.placeholderConfig = {
-      valid: true,
-      width: config.colSpan * this.config.colWidth,
-      height: config.rowSpan * this.config.rowHeight,
-      left: this.getXForItem(this.itemConfigFromEvent(config, e)),
-      top: this.getYForItem(this.itemConfigFromEvent(config, e)),
+    const newConfig = this.itemConfigFromEvent(config, e);
+    // if position is outside, keep the current position on each axis accordingly
+    if (newConfig.col <= 0 || (newConfig.col + newConfig.colSpan - 1) > this.config.cols) {
+      this.placeholder.setPosition(undefined, this.getYForItem(newConfig));
+    } else if (newConfig.row <= 0 || (newConfig.row + newConfig.rowSpan - 1) > this.config.rows) {
+      this.placeholder.setPosition(this.getXForItem(newConfig));
+    } else {
+      this.placeholder.setPosition(this.getXForItem(newConfig), this.getYForItem(newConfig));
     }
+
+    this.placeholder.setSize(newConfig.colSpan * this.config.colWidth,
+      newConfig.rowSpan * this.config.rowHeight);
+
+    this.placeholder.setValid(this.validPosition(config, e));
+    this.placeholder.show();
   }
 
   hidePlaceholder() {
-    if (this.placeholderConfig) {
-      this.placeholderConfig.valid = null;
-    }
+    this.placeholder.hide();
   }
 
   validPosition(item: CatGridItemConfig, event: MouseEvent) {
@@ -139,9 +128,10 @@ export class CatGridComponent implements OnChanges, OnDestroy {
 
   getMousePos(event: MouseEvent) {
     const rect = this.elementRef.nativeElement.getBoundingClientRect();
+    const nodeConfig = this.gridDragService.nodeConfig;
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: event.clientX - rect.left - (nodeConfig.clientX - nodeConfig.left),
+      y: event.clientY - rect.top - (nodeConfig.clientY - nodeConfig.top)
     };
   }
 

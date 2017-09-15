@@ -19,7 +19,9 @@ export class CatGridDragService {
     clientX: number,
     clientY: number,
     width: number,
-    height: number
+    height: number,
+    left: number,
+    top: number,
   };
 
   public constructor() {
@@ -29,20 +31,25 @@ export class CatGridDragService {
 
   public startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
     this.dragConfig = config;
-    this.dragNode = node;
+    this.dragNode = node.cloneNode(true) as HTMLElement;
 
     if (this.dragNode !== null) {
+
+      this.dragNode.style.transform = '';
+      this.dragNode.style.pointerEvents = 'none';
+      this.dragNode.style.position = 'fixed';
+
       this.nodeConfig = {
         clientX: e.clientX,
         clientY: e.clientY,
-        width: this.dragNode.getBoundingClientRect().width,
-        height: this.dragNode.getBoundingClientRect().height,
+        width: node.getBoundingClientRect().width,
+        height: node.getBoundingClientRect().height,
+        left: node.getBoundingClientRect().left,
+        top: node.getBoundingClientRect().top,
       };
 
-      this.dragNode.style.pointerEvents = 'none';
-      this.dragNode.style.position = 'fixed';
-      this.dragNode.style.top = (e.clientY - this.nodeConfig.height) + 'px';
-      this.dragNode.style.left = (e.clientX - this.nodeConfig.width) + 'px';
+      this.dragNode.style.top = (this.nodeConfig.top) + 'px';
+      this.dragNode.style.left = (this.nodeConfig.left) + 'px';
       document.body.appendChild(this.dragNode);
     }
 
@@ -55,8 +62,6 @@ export class CatGridDragService {
           ${event.clientY - this.nodeConfig.clientY}px
         )`;
       });
-
-    console.log(this.dragNode);
   }
 
   public stopDrag() {

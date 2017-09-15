@@ -88,7 +88,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.dragStart$
       .takeUntil(this.destroyed$)
       .subscribe((e: MouseEvent) => {
-        this.catGridDragService.startDrag(this.config, e, this.elementRef.nativeElement.cloneNode(true));
+        this.catGridDragService.startDrag(this.config, e, this.elementRef.nativeElement);
+        // hide the item with a delay
+        setTimeout(() => this.renderer.setStyle(this.elementRef.nativeElement, 'display', 'none'), 50);
       });
 
     this.resize$ = this.resizeStart$.flatMap(() => this.mouseMove$.map((mm: MouseEvent) => {

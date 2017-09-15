@@ -1,54 +1,62 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, ElementRef, Renderer2 } from '@angular/core';
 
 @Component({
   selector: 'cat-grid-placeholder',
   template: ``,
+  styles: [`
+    :host {
+      position: absolute;
+      pointer-events: none;
+    }
+  `]
 })
 export class CatGridPlaceholderComponent {
-  @Input() valid: boolean | null = null;
-
-  @HostBinding('style.width.px')
-  @Input()
   width: number;
-
-  @HostBinding('style.height.px')
-  @Input()
   height: number;
+  x: number;
+  y: number;
 
-  @Input()
-  left: number;
-
-  @Input()
-  top: number;
-
-  @HostBinding('style.transform')
-  get transform() {
-    return `translate(${this.left}px, ${this.top}px)`;
+  constructor(private renderer2: Renderer2,
+              private elementRef: ElementRef) {
   }
 
-  @HostBinding('style.position')
-  get p() {
-    return 'absolute';
+  show() {
+    this.setStyle('display', 'inline-block');
   }
 
-  @HostBinding('style.pointer-events')
-  get c() {
-    return 'none';
+  hide() {
+    this.setStyle('display', 'none');
   }
 
-  @HostBinding('class.grid-placeholder-invalid')
-  get invalidPlaceholder() {
-    return this.valid === false;
+  setValid(valid: boolean) {
+    if (valid) {
+      this.renderer2.removeClass(this.elementRef.nativeElement, 'grid-placeholder-invalid');
+    } else {
+      this.renderer2.addClass(this.elementRef.nativeElement, 'grid-placeholder-invalid');
+    }
   }
 
-  @HostBinding('class.grid-placeholder')
-  get validPlaceholder() {
-    return this.valid === true;
+  setSize(width: number, height: number) {
+    if (this.width !== width) {
+      this.setStyle('width', `${width}px`);
+      this.width = width;
+    }
+    if (this.height !== height) {
+      this.setStyle('height', `${height}px`);
+      this.height = height;
+    }
   }
 
-  @HostBinding('style.display')
-  get display() {
-    console.log(this.valid);
-    return this.valid === null ? 'none' : 'inline-block';
+  setPosition(x: number = this.x, y: number = this.y) {
+    if (this.x !== x || this.y !== y) {
+      this.setStyle('transform', `translate(${x}px, ${y}px)`);
+      this.x = x;
+      this.y = y;
+    }
+  }
+
+  setStyle(style: string, value: string) {
+    this.renderer2.setStyle(this.elementRef.nativeElement, style, value);
   }
 }
+
