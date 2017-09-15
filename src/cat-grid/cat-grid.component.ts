@@ -75,7 +75,7 @@ export class CatGridComponent implements OnChanges, OnDestroy {
     e.stopPropagation();
     if (!!this.gridDragService.dragConfig) {
       const config = this.gridDragService.dragConfig;
-      if (this.validPosition(config, e)) {
+      if (this.validPosition(config)) {
         // add to grid
         // remove from others
       }
@@ -100,19 +100,19 @@ export class CatGridComponent implements OnChanges, OnDestroy {
 
   showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
     const newConfig = this.itemConfigFromEvent(config, e);
-    // if position is outside, keep the current position on each axis accordingly
-    if (newConfig.col <= 0 || (newConfig.col + newConfig.colSpan - 1) > this.config.cols) {
-      this.placeholder.setPosition(undefined, this.getYForItem(newConfig));
-    } else if (newConfig.row <= 0 || (newConfig.row + newConfig.rowSpan - 1) > this.config.rows) {
-      this.placeholder.setPosition(this.getXForItem(newConfig));
-    } else {
-      this.placeholder.setPosition(this.getXForItem(newConfig), this.getYForItem(newConfig));
+    const x = this.getXForItem(newConfig);
+    const y = this.getYForItem(newConfig);
+    const width = newConfig.colSpan * this.config.colWidth;
+    const height = newConfig.rowSpan * this.config.rowHeight;
+
+    // only revalidate if position changed
+    if (x !== this.placeholder.x || y !== this.placeholder.y
+      || width !== this.placeholder.width || height !== this.placeholder.height) {
+      this.placeholder.setValid(this.validPosition(newConfig));
     }
 
-    this.placeholder.setSize(newConfig.colSpan * this.config.colWidth,
-      newConfig.rowSpan * this.config.rowHeight);
-
-    this.placeholder.setValid(this.validPosition(config, e));
+    this.placeholder.setPosition(x, y);
+    this.placeholder.setSize(width, height);
     this.placeholder.show();
   }
 
@@ -120,10 +120,9 @@ export class CatGridComponent implements OnChanges, OnDestroy {
     this.placeholder.hide();
   }
 
-  validPosition(item: CatGridItemConfig, event: MouseEvent) {
-    const conf = this.itemConfigFromEvent(item, event);
-    return this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, conf, this.config)
-      && !this.hasCollisions(item);
+  validPosition(config: CatGridItemConfig) {
+    return this.gridPositionService.validateGridPosition(config.col, config.row, config, this.config)
+      && !this.hasCollisions(config);
   }
 
   getMousePos(event: MouseEvent) {
@@ -144,7 +143,21 @@ export class CatGridComponent implements OnChanges, OnDestroy {
 
   itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
     const {x, y} = this.getMousePos(event);
-    const {col, row} = this.getGridPosition(x, y);
+    let {col, row} = this.getGridPosition(x, y);
+
+    // if position is outside, keep the current position on each axis accordingly
+    if (col + config.colSpan - 1 > this.config.cols) {
+      col = this.config.cols - config.colSpan + 1;
+    }
+    if (row + config.rowSpan - 1 > this.config.rows) {
+      row = this.config.rows - config.rowSpan + 1;
+    }
+    if (col <= 0) {
+      col = 1;
+    }
+    if (row <= 0) {
+      row = 1;
+    }
     return Object.assign({}, config, {col, row});
   }
 

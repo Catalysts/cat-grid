@@ -42,7 +42,7 @@ export class CatGridDragService {
   public startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
     this.dragConfig = config;
 
-    if (this.dragNode !== null) {
+    if (node !== null) {
       this.dragNode = node.cloneNode(true) as HTMLElement;
       this.dragNode.style.transform = '';
       this.dragNode.style.pointerEvents = 'none';
@@ -55,8 +55,8 @@ export class CatGridDragService {
         top: node.getBoundingClientRect().top,
       };
 
-      this.dragNode.style.top = (this.nodeConfig.top) + 'px';
-      this.dragNode.style.left = (this.nodeConfig.left) + 'px';
+      this.dragNode.style.top = this.nodeConfig.top + 'px';
+      this.dragNode.style.left = this.nodeConfig.left + 'px';
       document.body.appendChild(this.dragNode);
     }
 
