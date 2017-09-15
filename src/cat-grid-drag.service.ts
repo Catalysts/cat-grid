@@ -16,7 +16,7 @@ import { Subject } from 'rxjs/Subject';
 export class CatGridDragService {
   windowMouseMove$: Observable<MouseEvent>;
   windowMouseUp$: Observable<MouseEvent>;
-  droppedItem$: Subject<CatGridItemConfig | null>;
+  droppedItem$: Subject<CatGridItemConfig | null> = new Subject();
 
   dragConfig: CatGridItemConfig | null = null;
   dragNode: HTMLElement | null = null;
