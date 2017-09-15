@@ -1,5 +1,13 @@
-import { Component, ElementRef, Renderer2 } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Renderer2 } from '@angular/core';
 
+/**
+ * Angular component to be used as the 'placeholder' which shows up below the dragged element.
+ * It has a position, size and validity. Each of those are set according to each grid.
+ * All methods are accessed directly by the parent CatGridComponent for a more efficient usage.
+ * The classes for styling it are:
+ * `.grid-placeholder` - used when the placeholder is valid (default state)
+ * `.grid-placeholder-invalid` - used when the placeholder is invalid (as set in the setValid method)
+ */
 @Component({
   selector: 'cat-grid-placeholder',
   template: ``,
@@ -8,7 +16,8 @@ import { Component, ElementRef, Renderer2 } from '@angular/core';
       position: absolute;
       pointer-events: none;
     }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatGridPlaceholderComponent {
   width: number;

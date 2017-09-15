@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs/Rx';
+import { Observable } from 'rxjs/Rx';
 import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
 
-export interface ItemDragEvent {
-  item: CatGridItemConfig;
-  event: MouseEvent;
-}
-
+/**
+ * Angular service used to control the dragging.
+ * The service handles a global (appended to body) element where it holds the needed HtmlElement to drag.
+ * It also holds the CatGridItemConfig of the dragged element so other components (e.g. CatGridComponent)
+ * can use it when dragging over them.
+ *
+ * The method startDrag is used when we have to start dragging an element.
+ * The method stopDrag NEEDS to be used when stopping the drag (so that the dragging element is removed from the body).
+ */
 @Injectable()
 export class CatGridDragService {
   windowMouseMove$: Observable<MouseEvent>;
@@ -18,8 +22,6 @@ export class CatGridDragService {
   nodeConfig: {
     clientX: number,
     clientY: number,
-    width: number,
-    height: number,
     left: number,
     top: number,
   };
@@ -29,12 +31,19 @@ export class CatGridDragService {
     this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup').do(() => this.stopDrag());
   }
 
+  /**
+   * Method used to start a drag. It will create a new element, identical to the one sent as parameter.
+   * It will append it to the body and move it around as the mouse moves.
+   *
+   * @param {CatGridItemConfig} config - the configuration of the element dragged.
+   * @param {MouseEvent} e - mouse event which started the drag.
+   * @param {HTMLElement} node - the node of the element being dragged (used for copying it to the body).
+   */
   public startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
     this.dragConfig = config;
-    this.dragNode = node.cloneNode(true) as HTMLElement;
 
     if (this.dragNode !== null) {
-
+      this.dragNode = node.cloneNode(true) as HTMLElement;
       this.dragNode.style.transform = '';
       this.dragNode.style.pointerEvents = 'none';
       this.dragNode.style.position = 'fixed';
@@ -42,8 +51,6 @@ export class CatGridDragService {
       this.nodeConfig = {
         clientX: e.clientX,
         clientY: e.clientY,
-        width: node.getBoundingClientRect().width,
-        height: node.getBoundingClientRect().height,
         left: node.getBoundingClientRect().left,
         top: node.getBoundingClientRect().top,
       };
@@ -57,13 +64,16 @@ export class CatGridDragService {
       .filter(() => !!this.dragNode)
       .takeUntil(this.windowMouseUp$)
       .subscribe((event: MouseEvent) => {
-        this.dragNode.style.webkitTransform = `translate(
+        this.dragNode.style.transform = `translate(
           ${event.clientX - this.nodeConfig.clientX}px,
           ${event.clientY - this.nodeConfig.clientY}px
         )`;
       });
   }
 
+  /**
+   * Clears the current dragging element and the configuration stored.
+   */
   public stopDrag() {
     if (!!this.dragNode) {
       document.body.removeChild(this.dragNode);
