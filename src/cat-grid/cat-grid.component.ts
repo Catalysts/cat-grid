@@ -124,12 +124,10 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       this.gridDragService.mouseUpInside(e);
       const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e);
       if (this.validPosition(config)) {
-        console.log(config);
         this.droppedItem = config;
         this.gridDragService.stopDrag();
         this.gridDragService.itemDropped(config);
       }
-
       this.hidePlaceholder();
     }
     this.gridDragService.stopDrag();
@@ -149,6 +147,11 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
+    const placeholders = document.getElementsByClassName('grid-placeholder');
+    for (let i = 0; i < placeholders.length; ++i) {
+      (placeholders[i] as HTMLElement).style.display = 'none';
+    }
+
     const newConfig = this.itemConfigFromEvent(config, e);
     const x = this.getXForItem(newConfig);
     const y = this.getYForItem(newConfig);
