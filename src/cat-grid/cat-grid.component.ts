@@ -71,13 +71,13 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
             this.items.splice(index, 1);
           }
 
-          if (this.droppedItem && this.droppedItem.id === droppedItem.id) {
+          if (this.droppedItem) {
             this.items.push(this.droppedItem);
             this.droppedItem = null;
           }
-        } else {
-          this.itemsComponents.forEach(item => item.show());
         }
+        this.itemsComponents.forEach(item => item.show());
+        this.onItemsChange.emit(this.items);
         this.changeDetectorRef.markForCheck();
       });
   }
@@ -97,8 +97,17 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(e: MouseEvent) {
-    if (!!this.gridDragService.dragConfig) {
-      this.showPlaceholder(this.gridDragService.dragConfig, e);
+    if (e.target === this.elementRef.nativeElement || this.elementRef.nativeElement.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!!this.gridDragService.dragConfig) {
+        this.gridDragService.mouseMoveInside(e);
+        this.showPlaceholder(this.gridDragService.dragConfig, e);
+      } else {
+        this.hidePlaceholder();
+      }
+    } else {
+      this.hidePlaceholder();
     }
   }
 
@@ -112,17 +121,18 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     e.preventDefault();
     e.stopPropagation();
     if (!!this.gridDragService.dragConfig) {
+      this.gridDragService.mouseUpInside(e);
       const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e);
       if (this.validPosition(config)) {
+        console.log(config);
         this.droppedItem = config;
         this.gridDragService.stopDrag();
-
-        this.gridDragService.itemDropped(this.droppedItem);
+        this.gridDragService.itemDropped(config);
       }
 
-      this.gridDragService.stopDrag();
       this.hidePlaceholder();
     }
+    this.gridDragService.stopDrag();
   }
 
   getXForItem(config: CatGridItemConfig) {

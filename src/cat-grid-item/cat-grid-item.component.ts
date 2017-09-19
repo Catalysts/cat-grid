@@ -87,8 +87,10 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.dragStart$
       .takeUntil(this.destroyed$)
       .subscribe((e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.config.component.data = this.componentRef.instance;
         this.catGridDragService.startDrag(this.config, e, this.elementRef.nativeElement);
-        // hide the item with a delay
         this.hide();
         this.changeDetectorRef.markForCheck();
       });
@@ -168,11 +170,11 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   hide() {
-    this.renderer.setStyle(this.elementRef.nativeElement, 'visibility', 'hidden');
+    this.renderer.setStyle(this.elementRef.nativeElement, 'display', 'none');
   }
 
   show() {
-    this.renderer.setStyle(this.elementRef.nativeElement, 'visibility', 'visible');
+    this.renderer.setStyle(this.elementRef.nativeElement, 'display', 'inline-block');
   }
 
   canResize(): string | null {

@@ -16,10 +16,13 @@ import { Subject } from 'rxjs/Subject';
 export class CatGridDragService {
   windowMouseMove$: Observable<MouseEvent>;
   windowMouseUp$: Observable<MouseEvent>;
-  droppedItem$: Subject<CatGridItemConfig | null> = new Subject();
+  mouseMoveInside$ = new Subject<MouseEvent>();
+  mouseUpInside$ = new Subject<MouseEvent>();
+  droppedItem$ = new Subject<CatGridItemConfig | null>();
 
   dragConfig: CatGridItemConfig | null = null;
   dragNode: HTMLElement | null = null;
+  container: HTMLElement;
 
   nodeConfig: {
     clientX: number,
@@ -29,8 +32,10 @@ export class CatGridDragService {
   };
 
   constructor() {
-    this.windowMouseMove$ = Observable.fromEvent(window, 'mousemove');
-    this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup').do(() => this.stopDrag());
+    this.windowMouseMove$ = Observable.fromEvent(window, 'mousemove').merge(this.mouseMoveInside$.asObservable());
+    this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup');
+    this.container = document.createElement('span');
+    document.body.appendChild(this.container);
   }
 
   /**
@@ -59,28 +64,36 @@ export class CatGridDragService {
 
       this.dragNode.style.top = this.nodeConfig.top + 'px';
       this.dragNode.style.left = this.nodeConfig.left + 'px';
-      document.body.appendChild(this.dragNode);
-    }
+      this.container.appendChild(this.dragNode);
 
-    this.windowMouseMove$
-      .filter(() => !!this.dragNode)
-      .takeUntil(this.windowMouseUp$)
-      .subscribe((event: MouseEvent) => {
-        this.dragNode.style.transform = `translate(
+      this.windowMouseMove$
+        .filter(() => !!this.dragNode)
+        .takeUntil(this.windowMouseUp$.merge(this.mouseUpInside$.asObservable()))
+        .subscribe((event: MouseEvent) => this.dragNode.style.transform = `translate(
           ${event.clientX - this.nodeConfig.clientX}px,
           ${event.clientY - this.nodeConfig.clientY}px
-        )`;
+        )`);
+
+      this.windowMouseUp$.subscribe(() => {
+        this.itemDropped(null);
+        this.stopDrag();
       });
+    }
+  }
+
+  mouseMoveInside(event: MouseEvent) {
+    this.mouseMoveInside$.next(event);
+  }
+
+  mouseUpInside(event: MouseEvent) {
+    this.mouseUpInside$.next(event);
   }
 
   /**
    * Clears the current dragging element and the configuration stored.
    */
   stopDrag() {
-    if (!!this.dragNode) {
-      document.body.removeChild(this.dragNode);
-    }
-
+    this.container.innerHTML = '';
     this.dragConfig = null;
     this.dragNode = null;
   }
