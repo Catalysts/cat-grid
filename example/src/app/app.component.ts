@@ -7,7 +7,7 @@ import { ContainerComponent } from './container.component';
 @Component({
   selector: 'my-app',
   template: `<h1>Hello {{name}}</h1>
-  <div [catGridDraggable]="itemConfig">Test</div>
+  <span [dragula]="'id'"><div [catGridDraggableDragula]="itemConfig">Test</div></span>
   <div [catGridDraggable]="containerConfig">Container</div>
   <cat-grid [config]="gridConfig" [items]="items"></cat-grid>
   `,
@@ -17,8 +17,8 @@ export class AppComponent {
 
   gridConfig: CatGridConfig = {
     id: '1',
-    cols: 5,
-    rows: 5,
+    maxCols: 5,
+    maxRows: 5,
     colWidth: 100,
     rowHeight: 100
   };
@@ -27,8 +27,8 @@ export class AppComponent {
     id: '2',
     col: 2,
     row: 2,
-    colSpan: 4,
-    rowSpan: 1,
+    sizex: 4,
+    sizey: 1,
     component: {
       type: TestComponent,
       data: {}
@@ -39,8 +39,8 @@ export class AppComponent {
     id: '3',
     col: 2,
     row: 2,
-    colSpan: 4,
-    rowSpan: 2,
+    sizex: 4,
+    sizey: 2,
     component: {
       type: ContainerComponent,
       data: {}
@@ -49,5 +49,5 @@ export class AppComponent {
 
   items: CatGridItemConfig[] = [
     this.itemConfig,
-  ]
+  ];
 }

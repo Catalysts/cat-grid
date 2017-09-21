@@ -142,8 +142,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   setSize() {
-    this.width = this.config.cols * this.config.colWidth;
-    this.height = this.config.rows * this.config.rowHeight;
+    this.width = this.config.maxCols * this.config.colWidth;
+    this.height = this.config.maxRows * this.config.rowHeight;
   }
 
   showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
@@ -155,8 +155,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     const newConfig = this.itemConfigFromEvent(config, e);
     const x = this.getXForItem(newConfig);
     const y = this.getYForItem(newConfig);
-    const width = newConfig.colSpan * this.config.colWidth;
-    const height = newConfig.rowSpan * this.config.rowHeight;
+    const width = newConfig.sizex * this.config.colWidth;
+    const height = newConfig.sizey * this.config.rowHeight;
 
     // only revalidate if position changed
     if (x !== this.placeholder.x || y !== this.placeholder.y
@@ -199,11 +199,11 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     let {col, row} = this.getGridPosition(x, y);
 
     // if position is outside, keep the current position on each axis accordingly
-    if (col + config.colSpan - 1 > this.config.cols) {
-      col = this.config.cols - config.colSpan + 1;
+    if (col + config.sizex - 1 > this.config.maxCols) {
+      col = this.config.maxCols - config.sizex + 1;
     }
-    if (row + config.rowSpan - 1 > this.config.rows) {
-      row = this.config.rows - config.rowSpan + 1;
+    if (row + config.sizey - 1 > this.config.maxRows) {
+      row = this.config.maxRows - config.sizey + 1;
     }
     if (col <= 0) {
       col = 1;

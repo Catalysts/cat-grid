@@ -12,7 +12,6 @@ export class CatGridDraggableDragulaDirective {
   @HostBinding('draggable') draggable = false;
   @HostBinding('class') c: any;
 
-  private dragging = false;
   private windowMouseMove$ = new Subject<MouseEvent>();
   private windowMouseUp$ = new Subject<MouseEvent>();
 
@@ -21,23 +20,7 @@ export class CatGridDraggableDragulaDirective {
               private elementRef: ElementRef) {
     dragulaService.drag
       .filter(([, element]) => element.isEqualNode(this.elementRef.nativeElement))
-      .subscribe(() => this.dragging = true);
-    dragulaService.dragend
-      .filter(([, element]) => element.isEqualNode(this.elementRef.nativeElement))
-      .subscribe(() => setTimeout(() => this.dragging = false));
-    const dragObservable = this.windowMouseMove$
-      .filter(() => this.dragging)
-      .map(event => ({
-        event,
-        item: this.catGridDraggableDragula
-      }));
-    const dropObservable = this.windowMouseUp$
-      .filter(() => this.dragging)
-      .map(event => ({
-        event,
-        item: this.catGridDraggableDragula
-      }));
-    // this.gridDragService.addDraggingSource(dragObservable, dropObservable);
+      .subscribe(() => this.gridDragService.startDrag(this.catGridDraggableDragula, null, null));
   }
 
   @HostListener('window:mousemove', ['$event'])

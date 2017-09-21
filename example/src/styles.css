@@ -8,7 +8,7 @@ cat-grid {
   background-color: lightgrey;
 }
 
-.grid-placeholder-invalid {
+.grid-placeholder.grid-placeholder-invalid {
   background-color: red;
 }
 

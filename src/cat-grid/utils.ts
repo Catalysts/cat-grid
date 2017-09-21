@@ -18,7 +18,7 @@ export function toRectangle(conf: CatGridItemConfig): Rectangle {
   return {
     left: conf.col,
     top: conf.row,
-    right: conf.col + conf.colSpan - 1,
-    bottom: conf.row + conf.rowSpan - 1
+    right: conf.col + conf.sizex - 1,
+    bottom: conf.row + conf.sizey - 1
   };
 }
