@@ -65,6 +65,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnInit() {
     this.gridDragService.itemDroppedObservable()
+      .takeUntil(this.destroyed$)
       .subscribe(droppedItem => {
         if (droppedItem) {
           const index = this.items.findIndex(item => item.id === droppedItem.id);
@@ -128,6 +129,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
         this.droppedItem = config;
         this.gridDragService.stopDrag();
         this.gridDragService.itemDropped(config);
+      } else {
+        this.gridDragService.itemDropped(null);
       }
       this.hidePlaceholder();
     }

@@ -9,5 +9,6 @@ export {CatGridConfig} from './src/cat-grid/cat-grid.config';
 export {CatGridItemComponent} from './src/cat-grid-item/cat-grid-item.component';
 export {CatGridItemConfig} from './src/cat-grid-item/cat-grid-item.config';
 export {CatGridItemEvent} from './src/cat-grid-item/cat-grid-item.event';
+export {ICatGridItemComponent} from './src/cat-grid-item/cat-grid-item.interface';
 export {ITEM_DEFAULT_CONFIG} from './src/cat-grid-item/cat-grid-item.config';
 export {CatGridPlaceholderComponent} from './src/cat-grid-placeholder/cat-grid-placeholder.component';
