@@ -37,6 +37,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
   @Output() onResize = new EventEmitter<CatGridItemEvent>();
   @Output() onResizeStop = new EventEmitter<CatGridItemEvent>();
+  @Output() dataChanged = new EventEmitter<any>();
 
   @ViewChild('componentContainer', {read: ViewContainerRef})
   private componentContainer: ViewContainerRef;
@@ -89,7 +90,6 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
       .subscribe((e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        this.config.component.data = this.componentRef.instance;
         this.catGridDragService.startDrag(this.config, e, this.elementRef.nativeElement);
         this.hide();
         this.changeDetectorRef.markForCheck();
@@ -210,11 +210,27 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.componentRef = this.componentContainer.createComponent(factory);
     Object.assign(this.componentRef.instance, this.config.component.data);
 
+    this.checkInstanceInterface(this.componentRef.instance);
+
     if (this.componentRef.instance.catGridItemLoaded) {
       this.componentRef.instance.catGridItemLoaded(this.config);
     }
 
+    if (this.componentRef.instance.dataChangedObservable) {
+      this.componentRef.instance.dataChangedObservable().subscribe((data: any) => {
+        this.config.component.data = data;
+        this.dataChanged.emit(data);
+        this.changeDetectorRef.markForCheck();
+      });
+    }
+
     this.componentRef.changeDetectorRef.detectChanges();
     this.changeDetectorRef.markForCheck();
+  }
+
+  checkInstanceInterface(instance: any) {
+    if (!instance.catGridItemLoaded || !instance.dataChangedObservable) {
+      throw 'Instance should implement CatGridItemInterface';
+    }
   }
 }

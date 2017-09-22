@@ -32,6 +32,7 @@ import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
                    [y]="getYForItem(item)"
                    [colWidth]="config.colWidth"
                    [rowHeight]="config.rowHeight"
+                   (dataChanged)="itemDataChanged($event, item.id)"
                    *ngFor="let item of items">
     </cat-grid-item>
     <cat-grid-placeholder class="grid-placeholder"></cat-grid-placeholder>
@@ -131,6 +132,15 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       this.hidePlaceholder();
     }
     this.gridDragService.stopDrag();
+  }
+
+  itemDataChanged(data: any, id: string) {
+    const index = this.items.findIndex(item => item.id === id);
+    if (index > -1) {
+      this.items[index].component.data = data;
+      this.onItemsChange.emit(this.items);
+    }
+    this.changeDetectorRef.markForCheck();
   }
 
   getXForItem(config: CatGridItemConfig) {

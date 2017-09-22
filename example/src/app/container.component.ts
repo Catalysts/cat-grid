@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CatGridConfig } from './lib/src/cat-grid/cat-grid.config';
 import { CatGridItemConfig } from './lib/src/cat-grid-item/cat-grid-item.config';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'cat-container',
@@ -22,5 +23,17 @@ export class ContainerComponent {
 
   items: CatGridItemConfig[] = [];
 
-  onItemsChange = (items: CatGridItemConfig[]) => this.items = items;
+  dataChanged$ = new Subject();
+
+  onItemsChange = (items: CatGridItemConfig[]) => this.dataChanged$.next({items});
+
+  catGridItemLoaded(config: CatGridItemConfig): void {
+  }
+
+  catGridItemResized(config: CatGridItemConfig): void {
+  }
+
+  dataChangedObservable() {
+    return this.dataChanged$.asObservable();
+  }
 }
