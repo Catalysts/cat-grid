@@ -13,7 +13,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  Renderer2,
+  Renderer2, Type,
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
@@ -210,7 +210,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.componentRef = this.componentContainer.createComponent(factory);
     Object.assign(this.componentRef.instance, this.config.component.data);
 
-    this.checkInstanceInterface(this.componentRef.instance);
+    this.checkInstanceInterface(this.componentRef.instance, factory.componentType);
 
     if (this.componentRef.instance.catGridItemLoaded) {
       this.componentRef.instance.catGridItemLoaded(this.config);
@@ -228,9 +228,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.changeDetectorRef.markForCheck();
   }
 
-  checkInstanceInterface(instance: any) {
+  checkInstanceInterface(instance: any, type: Type<any>) {
     if (!instance.catGridItemLoaded || !instance.dataChangedObservable) {
-      throw 'Instance should implement CatGridItemInterface';
+      throw `${type.name} should implement CatGridItemInterface`;
     }
   }
 }
