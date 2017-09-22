@@ -86,6 +86,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.setSize(this.config.sizex * this.colWidth, this.config.sizey * this.rowHeight);
 
     this.dragStart$
+      .filter(() => this.config.draggable)
       .takeUntil(this.destroyed$)
       .subscribe((e: MouseEvent) => {
         e.preventDefault();
@@ -230,7 +231,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
   checkInstanceInterface(instance: any, type: Type<any>) {
     if (!instance.catGridItemLoaded || !instance.dataChangedObservable) {
-      throw `${type.name} should implement CatGridItemInterface`;
+      throw `${type.name} should implement ICatGridItemComponent`;
     }
   }
 }

@@ -42,6 +42,7 @@ import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
       display: inline-block;
     }
   `],
+  host: {'class': 'grid'},
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
