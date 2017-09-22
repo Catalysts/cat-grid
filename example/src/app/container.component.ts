@@ -14,8 +14,8 @@ import { CatGridItemConfig } from './lib/src/cat-grid-item/cat-grid-item.config'
 export class ContainerComponent {
   gridConfig: CatGridConfig = {
     id: '1',
-    cols: 4,
-    rows: 2,
+    maxCols: 4,
+    maxRows: 2,
     colWidth: 100,
     rowHeight: 100
   };
