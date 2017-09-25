@@ -99,10 +99,9 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   @HostListener('mousemove', ['$event'])
-  onMouseMove(e: MouseEvent) {
-    if (e.target === this.elementRef.nativeElement || this.elementRef.nativeElement.contains(e.target)) {
-      e.preventDefault();
-      e.stopPropagation();
+  onMouseMove(e: any) {
+    if (!e.dirty && (e.target === this.elementRef.nativeElement || this.elementRef.nativeElement.contains(e.target))) {
+      e.dirty = true;
       if (!!this.gridDragService.dragConfig) {
         this.gridDragService.mouseMoveInside(e);
         this.showPlaceholder(this.gridDragService.dragConfig, e);
@@ -120,9 +119,11 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   @HostListener('mouseup', ['$event'])
-  onMouseUp(e: MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
+  onMouseUp(e: any) {
+    if (!e.dirty) {
+      return;
+    }
+    e.dirty = true;
     if (!!this.gridDragService.dragConfig) {
       this.gridDragService.mouseUpInside(e);
       const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e);
