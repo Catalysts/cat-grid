@@ -120,7 +120,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
   @HostListener('mouseup', ['$event'])
   onMouseUp(e: any) {
-    if (!e.dirty) {
+    if (e.dirty) {
       return;
     }
     e.dirty = true;
