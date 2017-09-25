@@ -49,7 +49,7 @@ export class CatGridDragService {
   startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
     this.dragConfig = config;
 
-    if (node !== null) {
+    if (node !== null && !!e) {
       this.dragNode = node.cloneNode(true) as HTMLElement;
       this.dragNode.style.transform = '';
       this.dragNode.style.pointerEvents = 'none';
