@@ -19,13 +19,11 @@ export class CatGridDraggableDragulaDirective {
     dragulaService.drag
       .filter(([, element]) => element.isEqualNode(this.elementRef.nativeElement))
       .subscribe(([, element]) => {
-        setTimeout(() => {
-          this.gridDragService.startDrag(this.catGridDraggableDragula, this.event, element);
-        }, 1);
+        setTimeout(() => this.gridDragService.startDrag(this.catGridDraggableDragula, this.event, element), 10);
       });
   }
 
-  @HostListener('mousemove', ['$event'])
+  @HostListener('mousedown', ['$event'])
   onMouseClick(event: MouseEvent) {
     this.event = event;
   }

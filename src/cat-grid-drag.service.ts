@@ -54,6 +54,7 @@ export class CatGridDragService {
       this.dragNode.style.transform = '';
       this.dragNode.style.pointerEvents = 'none';
       this.dragNode.style.position = 'fixed';
+      this.dragNode.style.zIndex = '9999';
 
       this.nodeConfig = {
         clientX: e.clientX,
