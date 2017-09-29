@@ -70,17 +70,24 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       .subscribe(droppedItem => {
         if (droppedItem) {
           const index = this.items.findIndex(item => item.id === droppedItem.id);
+          let changed = false;
+
           if (index > -1) {
             this.items.splice(index, 1);
+            changed = true;
           }
 
           if (this.droppedItem) {
             this.items.push(this.droppedItem);
             this.droppedItem = null;
+            changed = true;
+          }
+
+          if (changed) {
+            this.onItemsChange.emit(this.items);
           }
         }
         this.itemsComponents.forEach(item => item.show());
-        this.onItemsChange.emit(this.items);
         this.changeDetectorRef.markForCheck();
       });
   }
