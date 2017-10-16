@@ -204,8 +204,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     const rect = this.elementRef.nativeElement.getBoundingClientRect();
     const nodeConfig = this.gridDragService.nodeConfig;
     return {
-      x: event.clientX - rect.left - (nodeConfig.clientX - nodeConfig.left),
-      y: event.clientY - rect.top - (nodeConfig.clientY - nodeConfig.top)
+      x: event.offsetX,
+      y: event.offsetY
     };
   }
 
