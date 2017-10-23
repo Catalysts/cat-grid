@@ -95,6 +95,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   ngOnDestroy() {
     this.destroyed$.next();
     this.destroyed$.unsubscribe();
+
+    this.itemsComponents.forEach(item => item.ngOnDestroy());
   }
 
   ngOnChanges(changes: any) {
@@ -204,8 +206,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     const rect = this.elementRef.nativeElement.getBoundingClientRect();
     const nodeConfig = this.gridDragService.nodeConfig;
     return {
-      x: event.offsetX,
-      y: event.offsetY
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
     };
   }
 

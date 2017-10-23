@@ -145,6 +145,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
   ngOnDestroy(): void {
     this.destroyed$.next();
+    this.destroyed$.complete();
     if (this.componentRef) {
       this.componentRef.destroy();
     }
