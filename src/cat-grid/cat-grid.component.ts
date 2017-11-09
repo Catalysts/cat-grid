@@ -185,7 +185,13 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     // only revalidate if position changed
     if (x !== this.placeholder.x || y !== this.placeholder.y
       || width !== this.placeholder.width || height !== this.placeholder.height) {
-      this.placeholder.setValid(this.validPosition(newConfig));
+      const valid = this.validPosition(newConfig);
+      if (valid) {
+        this.cursor = 'pointer';
+      } else {
+        this.cursor = 'no-drop';
+      }
+      this.placeholder.setValid(valid);
     }
 
     this.placeholder.setPosition(x, y);
@@ -194,6 +200,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   hidePlaceholder() {
+    this.cursor = 'auto';
     this.placeholder.hide();
   }
 

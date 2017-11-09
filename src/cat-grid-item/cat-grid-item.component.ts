@@ -78,12 +78,17 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.renderer.setStyle(this.elementRef.nativeElement, 'position', 'absolute');
 
     [this.dragStart$, this.resizeStart$] = Observable.fromEvent(this.elementRef.nativeElement, 'mousedown')
-      .partition(() => !this.canResize());
+      .partition((e: any) => !this.canResize(e));
 
     this.mouseUp$ = Observable.fromEvent(this.elementRef.nativeElement, 'mouseup');
     this.mouseMove$ = Observable.fromEvent(document, 'mousemove');
 
     this.setSize(this.config.sizex * this.colWidth, this.config.sizey * this.rowHeight);
+
+    this.mouseMove$.takeUntil(this.destroyed$)
+      .subscribe(e => {
+        this.setResizeCursor(e);
+      });
 
     this.dragStart$
       .filter(() => this.config.draggable)
@@ -96,15 +101,16 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
         this.changeDetectorRef.markForCheck();
       });
 
-    this.resize$ = this.resizeStart$.flatMap(() => this.mouseMove$.map((mm: MouseEvent) => {
+    this.resize$ = this.resizeStart$.flatMap((dragStart: MouseEvent) => this.mouseMove$.map((mm: MouseEvent) => {
       mm.preventDefault();
 
-      const newWidth = Math.max(mm.clientX - this.config.col, 100);
-      const newHeight = Math.max(mm.clientY - this.config.row, 100);
+      const newWidth = this.elemHeight + Math.max(mm.clientX - dragStart.clientX, 100);
+      const newHeight = this.elemWidth + Math.max(mm.clientY - dragStart.clientY, 100);
 
       return {
         newWidth,
-        newHeight
+        newHeight,
+        event: mm
       };
     })
       .takeUntil(this.mouseUp$)
@@ -124,8 +130,19 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.resize$
       .takeUntil(this.destroyed$)
       .subscribe(size => {
-        this.setResizeCursor();
-        this.setSize(size.newWidth, size.newHeight);
+        const type = this.setResizeCursor(size.event);
+
+        let newWidth = this.elemWidth;
+        let newHeight = this.elemHeight;
+
+        if (type === 'both' || type === 'width') {
+          newWidth = size.newWidth;
+        }
+        if (type === 'both' || type === 'height') {
+          newHeight = size.newHeight;
+        }
+
+        this.setSize(newWidth, newHeight);
         this.changeDetectorRef.markForCheck();
       });
   }
@@ -155,8 +172,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     setTimeout(() => this.injectComponent(), 1);
   }
 
-  setResizeCursor(): void {
-    switch (this.canResize()) {
+  setResizeCursor(e: any): string {
+    const resizeType = this.canResize(e);
+    switch (resizeType) {
       case 'both':
         this.cursor = 'nwse-resize';
         break;
@@ -169,6 +187,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
       default:
         this.cursor = 'auto';
     }
+    return resizeType;
   }
 
   hide() {
@@ -179,16 +198,17 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.renderer.setStyle(this.elementRef.nativeElement, 'display', 'inline-block');
   }
 
-  canResize(): string | null {
+  canResize(e: MouseEvent): string | null {
     if (!this.config.resizable) {
       return null;
     }
-    if (this.config.col < this.elemWidth && this.config.col > this.elemWidth - this.config.borderSize
-      && this.config.row < this.elemHeight && this.config.row > this.elemHeight - this.config.borderSize) {
+
+    if (e.offsetX < this.elemWidth && e.offsetX > this.elemWidth - this.config.borderSize
+      && e.offsetY < this.elemHeight && e.offsetY > this.elemHeight - this.config.borderSize) {
       return 'both';
-    } else if (this.config.col < this.elemWidth && this.config.col > this.elemWidth - this.config.borderSize) {
+    } else if (e.offsetX < this.elemWidth && e.offsetX > this.elemWidth - this.config.borderSize) {
       return 'width';
-    } else if (this.config.row < this.elemHeight && this.config.row > this.elemHeight - this.config.borderSize) {
+    } else if (e.offsetY < this.elemHeight && e.offsetY > this.elemHeight - this.config.borderSize) {
       return 'height';
     }
 
