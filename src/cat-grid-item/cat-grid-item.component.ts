@@ -149,15 +149,13 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
   ngOnChanges(changes: any) {
     const config: CatGridItemConfig = changes.config;
-    if (!config) {
-      return;
-    }
     if (changes.x || changes.y) {
       this.setPosition(this.x, this.y);
     }
-    if (config.sizex || config.sizey) {
-      this.setSize(config.sizex * this.colWidth, config.sizey * this.rowHeight);
+    if (!config) {
+      return;
     }
+    this.applyConfigChanges(config);
   }
 
   ngOnDestroy(): void {
@@ -170,6 +168,12 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
   ngAfterViewInit(): void {
     setTimeout(() => this.injectComponent(), 1);
+  }
+
+  applyConfigChanges(config:CatGridItemConfig) {
+    if (config.sizex || config.sizey) {
+      this.setSize(config.sizex * this.colWidth, config.sizey * this.rowHeight);
+    }
   }
 
   setResizeCursor(e: any): string {
@@ -239,10 +243,16 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     }
 
     if (this.componentRef.instance.dataChangedObservable) {
-      this.componentRef.instance.dataChangedObservable().subscribe((data: any) => {
+      this.componentRef.instance.dataChangedObservable().takeUntil(this.destroyed$).subscribe((data: any) => {
         this.config.component.data = data;
         this.dataChanged.emit(data);
         this.changeDetectorRef.markForCheck();
+      });
+    }
+
+    if (this.componentRef.instance.configChangedObservable) {
+      this.componentRef.instance.configChangedObservable().takeUntil(this.destroyed$).subscribe((config: CatGridItemConfig) => {
+        this.applyConfigChanges(config);
       });
     }
 

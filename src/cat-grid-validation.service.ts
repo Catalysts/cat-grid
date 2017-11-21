@@ -29,6 +29,14 @@ export class CatGridValidationService {
     this.resizeConditions.push(condition);
   }
 
+  clearPositionConditions() {
+    this.positionConditions = [];
+  }
+
+  clearResizeConditions() {
+    this.resizeConditions = [];
+  }
+
   validateConditions(gridX: number,
                      gridY: number,
                      gridItem: CatGridItemConfig,

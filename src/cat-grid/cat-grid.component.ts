@@ -94,7 +94,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnDestroy() {
     this.destroyed$.next();
-    this.destroyed$.unsubscribe();
+    this.destroyed$.complete();
 
     this.itemsComponents.forEach(item => item.ngOnDestroy());
   }

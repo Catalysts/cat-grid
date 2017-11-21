@@ -6,4 +6,6 @@ export interface ICatGridItemComponent {
   catGridItemResized(config: CatGridItemConfig): void;
   // Observable which has all the data changes of this component
   dataChangedObservable(): Observable<any>;
+  // Observable which has all the config changed of this component
+  configChangedObservable(): Observable<CatGridItemConfig>;
 }
