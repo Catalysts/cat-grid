@@ -33,7 +33,7 @@ import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
                    [colWidth]="config.colWidth"
                    [rowHeight]="config.rowHeight"
                    (dataChanged)="itemDataChanged($event, item.id)"
-                   *ngFor="let item of items">
+                   *ngFor="let item of displayedItems">
     </cat-grid-item>
     <cat-grid-placeholder class="grid-placeholder"></cat-grid-placeholder>
   `,
@@ -54,7 +54,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   @HostBinding('style.height.px') height = 100;
   @ViewChild(CatGridPlaceholderComponent) placeholder: CatGridPlaceholderComponent;
   @ViewChildren(CatGridItemComponent) itemsComponents: QueryList<CatGridItemComponent>;
-
+  displayedItems: CatGridItemConfig[] = [];
   destroyed$ = new Subject();
   droppedItem: CatGridItemConfig | null = null;
 
@@ -69,22 +69,22 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       .takeUntil(this.destroyed$)
       .subscribe(droppedItem => {
         if (droppedItem) {
-          const index = this.items.findIndex(item => item.id === droppedItem.id);
+          const index = this.displayedItems.findIndex(item => item.id === droppedItem.id);
           let changed = false;
 
           if (index > -1) {
-            this.items.splice(index, 1);
+            this.displayedItems.splice(index, 1);
             changed = true;
           }
 
           if (this.droppedItem) {
-            this.items.push(this.droppedItem);
+            this.displayedItems.push(this.droppedItem);
             this.droppedItem = null;
             changed = true;
           }
 
           if (changed) {
-            this.onItemsChange.emit(this.items);
+            this.onItemsChange.emit(this.displayedItems);
           }
         }
         this.itemsComponents.forEach(item => item.show());
@@ -104,6 +104,26 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
     if (config) {
       this.setSize();
+    }
+
+    if (changes.items) {
+      // remove items which not longer are displayed
+      this.displayedItems = this.displayedItems.filter(item => changes.items.currentValue
+        .find((changedItem: any) => item.id === changedItem.id));
+      changes.items.currentValue.forEach((item: any) => {
+        const i = this.displayedItems.findIndex(displayedItem => displayedItem.id === item.id);
+        if (i < 0) {
+          // it is a new item
+          this.displayedItems.push(item);
+        } else {
+          // this is an old item
+          const itemRef = this.itemsComponents.find(cmp => cmp.config.id === item.id);
+          if (itemRef) {
+            itemRef.applyConfigChanges(item);
+            itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
+          }
+        }
+      });
     }
   }
 

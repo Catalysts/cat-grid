@@ -13,7 +13,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  Renderer2, Type,
+  Renderer2, SimpleChange, Type,
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
@@ -148,14 +148,14 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   ngOnChanges(changes: any) {
-    const config: CatGridItemConfig = changes.config;
+    const config: SimpleChange = changes.config;
     if (changes.x || changes.y) {
       this.setPosition(this.x, this.y);
     }
     if (!config) {
       return;
     }
-    this.applyConfigChanges(config);
+    this.applyConfigChanges(config.currentValue);
   }
 
   ngOnDestroy(): void {
@@ -171,8 +171,10 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   applyConfigChanges(config:CatGridItemConfig) {
-    if (config.sizex || config.sizey) {
+    if (JSON.stringify(this.config) !== JSON.stringify(config)) {
+      this.config = config;
       this.setSize(config.sizex * this.colWidth, config.sizey * this.rowHeight);
+      this.injectComponent();
     }
   }
 
@@ -229,6 +231,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   injectComponent(): void {
+    if (this.config.component.type === this.componentRef.componentType) {
+      return;
+    }
     if (this.componentRef) {
       this.componentRef.destroy();
     }
