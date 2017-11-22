@@ -231,9 +231,6 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   injectComponent(): void {
-    if (this.config.component.type === this.componentRef.componentType) {
-      return;
-    }
     if (this.componentRef) {
       this.componentRef.destroy();
     }
