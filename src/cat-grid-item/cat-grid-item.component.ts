@@ -155,7 +155,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     if (!config) {
       return;
     }
-    this.applyConfigChanges(config.currentValue);
+    if (JSON.stringify(config.currentValue) !== JSON.stringify(config.previousValue)) {
+      this.applyConfigChanges(config.currentValue);
+    }
   }
 
   ngOnDestroy(): void {
@@ -171,11 +173,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   applyConfigChanges(config:CatGridItemConfig) {
-    if (JSON.stringify(this.config) !== JSON.stringify(config)) {
       this.config = config;
       this.setSize(config.sizex * this.colWidth, config.sizey * this.rowHeight);
       this.injectComponent();
-    }
   }
 
   setResizeCursor(e: any): string {

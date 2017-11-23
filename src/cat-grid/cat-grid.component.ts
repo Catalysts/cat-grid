@@ -119,7 +119,10 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
           // this is an old item
           const itemRef = this.itemsComponents.find(cmp => cmp.config.id === item.id);
           if (itemRef) {
-            itemRef.applyConfigChanges(item);
+            const oldConfig = changes.items.previousValue.find((i: any) => i.id === item.id);
+            // if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
+              itemRef.applyConfigChanges(item);
+            // }
             itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
           }
         }
@@ -169,10 +172,10 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   itemDataChanged(data: any, id: string) {
-    const index = this.items.findIndex(item => item.id === id);
+    const index = this.displayedItems.findIndex(item => item.id === id);
     if (index > -1) {
-      this.items[index].component.data = data;
-      this.onItemsChange.emit(this.items);
+      this.displayedItems[index].component.data = data;
+      this.onItemsChange.emit(this.displayedItems);
     }
     this.changeDetectorRef.markForCheck();
   }
@@ -266,7 +269,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   hasCollisions(itemConf: CatGridItemConfig): boolean {
-    return this.items.filter(c => c.id !== itemConf.id)
+    return this.displayedItems.filter(c => c.id !== itemConf.id)
       .some((conf: CatGridItemConfig) => intersect(toRectangle(conf), toRectangle(itemConf)));
   }
 }
