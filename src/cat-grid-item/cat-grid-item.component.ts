@@ -179,6 +179,10 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   }
 
   setResizeCursor(e: any): string {
+    if (this.catGridDragService.dragConfig) {
+      this.cursor = 'no-drop';
+      return null;
+    }
     const resizeType = this.canResize(e);
     switch (resizeType) {
       case 'both':

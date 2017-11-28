@@ -220,6 +220,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     this.placeholder.setPosition(x, y);
     this.placeholder.setSize(width, height);
     this.placeholder.show();
+    this.changeDetectorRef.markForCheck();
   }
 
   hidePlaceholder() {
