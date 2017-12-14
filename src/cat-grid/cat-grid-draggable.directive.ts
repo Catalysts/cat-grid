@@ -1,18 +1,23 @@
-import {Directive, HostListener, Input, HostBinding} from '@angular/core';
-import {CatGridDragService} from '../cat-grid-drag.service';
+import { Directive, HostListener, Input, HostBinding } from '@angular/core';
+import { CatGridDragService } from '../cat-grid-drag.service';
+import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
 
 @Directive({
   selector: '[catGridDraggable]'
 })
 export class CatGridDraggableDirective {
-  @Input() private catGridDraggable: any;
-  @HostBinding('draggable') draggable: boolean = true;
+  @Input() catGridDraggable: CatGridItemConfig;
+  // @HostBinding('draggable') draggable = true;
 
   constructor(private gridDragService: CatGridDragService) {
   }
 
-  @HostListener('dragstart')
-  private dragStart() {
-    this.gridDragService.dragItemConf = this.catGridDraggable;
+  @HostListener('mousedown', ['$event'])
+  private dragStart(e: MouseEvent) {
+    this.gridDragService.startDrag(
+      this.catGridDraggable,
+      e,
+      e.target as HTMLElement
+    );
   }
 }

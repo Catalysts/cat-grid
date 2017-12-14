@@ -1,85 +1,71 @@
-import {Component, HostBinding} from '@angular/core';
-import {CatGridDirective} from '../cat-grid/cat-grid.directive';
+import { ChangeDetectionStrategy, Component, ElementRef, Renderer2 } from '@angular/core';
 
+/**
+ * Angular component to be used as the 'placeholder' which shows up below the dragged element.
+ * It has a position, size and validity. Each of those are set according to each grid.
+ * All methods are accessed directly by the parent CatGridComponent for a more efficient usage.
+ * The classes for styling it are:
+ * `.grid-placeholder` - used when the placeholder is valid (default state)
+ * `.grid-placeholder-invalid` - used when the placeholder is invalid (as set in the setValid method)
+ */
 @Component({
   selector: 'cat-grid-placeholder',
-  template: `<div [style.display]="hidden"></div>`,
+  template: ``,
+  styles: [`
+    :host {
+      position: absolute;
+      pointer-events: none;
+    }
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatGridPlaceholderComponent {
-  private hidden: boolean = true;
-  private sizex: number;
-  private sizey: number;
-  private col: number;
-  private row: number;
-  private ngGridDirective: CatGridDirective;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
 
-  @HostBinding('style.position') get p() {
-    return 'absolute';
+  constructor(private renderer2: Renderer2,
+              private elementRef: ElementRef) {
   }
 
-  @HostBinding('style.pointer-events') get c() {
-    return 'none';
+  show() {
+    this.setStyle('display', 'inline-block');
   }
 
-  @HostBinding('style.width')
-  private width: string;
-
-  @HostBinding('style.height')
-  private height: string;
-
-  @HostBinding('style.left')
-  private left: string;
-
-  @HostBinding('style.top')
-  private top: string;
-
-  @HostBinding('class.grid-placeholder-invalid') get invalidPlaceholder() {
-    return !this.valid;
+  hide() {
+    this.setStyle('display', 'none');
   }
 
-  @HostBinding('class.grid-placeholder') get validPlaceholder() {
-    return this.valid;
+  setValid(valid: boolean) {
+    if (valid) {
+      this.renderer2.removeClass(this.elementRef.nativeElement, 'grid-placeholder-invalid');
+    } else {
+      this.renderer2.addClass(this.elementRef.nativeElement, 'grid-placeholder-invalid');
+    }
   }
 
-  public valid: boolean = true;
-
-  public registerGrid(ngGrid: CatGridDirective) {
-    this.ngGridDirective = ngGrid;
+  setSize(width: number, height: number) {
+    if (this.width !== width) {
+      this.setStyle('width', `${width}px`);
+      this.width = width;
+    }
+    if (this.height !== height) {
+      this.setStyle('height', `${height}px`);
+      this.height = height;
+    }
   }
 
-  public setSize(x: number, y: number): void {
-    this.sizex = x;
-    this.sizey = y;
-    this.recalculateDimensions();
+  setPosition(x: number = this.x, y: number = this.y) {
+    if (this.x !== x || this.y !== y) {
+      this.setStyle('transform', `translate(${x}px, ${y}px)`);
+      this.x = x;
+      this.y = y;
+    }
   }
 
-  public setGridPosition(col: number, row: number): void {
-    this.col = col;
-    this.row = row;
-    this.recalculatePosition();
-  }
-
-  private recalculatePosition(): void {
-    this.left = this.ngGridDirective.pagePosition.pageX
-      + (this.ngGridDirective.colWidth + this.ngGridDirective.marginLeft + this.ngGridDirective.marginRight) * (this.col - 1)
-      + this.ngGridDirective.marginLeft
-      + 'px';
-    this.top = this.ngGridDirective.pagePosition.pageY
-      + (this.ngGridDirective.rowHeight + this.ngGridDirective.marginTop + this.ngGridDirective.marginBottom) * (this.row - 1)
-      + this.ngGridDirective.marginTop
-      + 'px';
-  }
-
-  private recalculateDimensions(): void {
-    this.width = (this.ngGridDirective.colWidth * this.sizex)
-      + ((this.ngGridDirective.marginLeft + this.ngGridDirective.marginRight) * (this.sizex - 1))
-      + 'px';
-    this.height = (this.ngGridDirective.rowHeight * this.sizey)
-      + ((this.ngGridDirective.marginTop + this.ngGridDirective.marginBottom) * (this.sizey - 1))
-      + 'px';
-  }
-
-  public hide(): void {
-    this.hidden = true;
+  setStyle(style: string, value: string) {
+    this.renderer2.setStyle(this.elementRef.nativeElement, style, value);
   }
 }
+

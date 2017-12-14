@@ -1,275 +1,276 @@
 import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  OnInit,
-  HostListener,
-  Output,
-  Input,
-  OnDestroy,
+  ElementRef,
   EventEmitter,
+  HostBinding,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
   ViewChild,
-  ElementRef, HostBinding
+  ViewChildren
 } from '@angular/core';
-import {Subject, Observable, Subscription} from 'rxjs/Rx';
-import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
-import {CatGridConfig} from './cat-grid.config';
-import {CatGridDirective} from './cat-grid.directive';
-import {CatGridDragService, ItemDragEvent} from '../cat-grid-drag.service';
-import {CatGridValidationService} from '../cat-grid-validation.service';
-import {CatGridItemComponent} from '../cat-grid-item/cat-grid-item.component';
-import {intersect, toRectangle} from './utils';
+import { Subject } from 'rxjs/Rx';
+import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
+import { CatGridConfig } from './cat-grid.config';
+import { CatGridDragService } from '../cat-grid-drag.service';
+import { CatGridValidationService } from '../cat-grid-validation.service';
+import { intersect, toRectangle } from './utils';
+import { CatGridPlaceholderComponent } from '../cat-grid-placeholder/cat-grid-placeholder.component';
+import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
 
 @Component({
   selector: 'cat-grid',
   template: `
-    <div [catGrid]="config" (onResizeStop)="resizeFinished($event)">
-      <cat-grid-item [item]="item"
-                     *ngFor="let item of items">
-      </cat-grid-item>
-    </div>
+    <cat-grid-item [config]="item"
+                   [x]="getXForItem(item)"
+                   [y]="getYForItem(item)"
+                   [colWidth]="config.colWidth"
+                   [rowHeight]="config.rowHeight"
+                   (dataChanged)="itemDataChanged($event, item.id)"
+                   *ngFor="let item of displayedItems">
+    </cat-grid-item>
+    <cat-grid-placeholder class="grid-placeholder"></cat-grid-placeholder>
   `,
+  styles: [`
+    :host {
+      display: inline-block;
+    }
+  `],
+  host: {'class': 'grid'},
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CatGridComponent implements OnInit, OnDestroy {
-  static GRID_POSITIONS_OFFSET = 1;
+export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
+  @Input() config: CatGridConfig;
+  @Input() items: CatGridItemConfig[] = [];
+  @Output() onItemsChange = new EventEmitter();
+  @HostBinding('style.cursor') cursor = 'auto';
+  @HostBinding('style.width.px') width = 100;
+  @HostBinding('style.height.px') height = 100;
+  @ViewChild(CatGridPlaceholderComponent) placeholder: CatGridPlaceholderComponent;
+  @ViewChildren(CatGridItemComponent) itemsComponents: QueryList<CatGridItemComponent>;
+  displayedItems: CatGridItemConfig[] = [];
+  destroyed$ = new Subject();
+  droppedItem: CatGridItemConfig | null = null;
 
-  @Output() itemResizeStop = new EventEmitter<CatGridItemConfig>();
-
-  @ViewChild(CatGridDirective)
-  public ngGrid: CatGridDirective;
-
-  @Input()
-  private config: CatGridConfig;
-
-  @Input()
-  public items: CatGridItemConfig[] = [];
-
-  @HostBinding('style.cursor')
-  public cursor: string = 'auto';
-
-  public mouseMove$ = new Subject<MouseEvent>();
-  public mouseUp$ = new Subject<MouseEvent>();
-  public mouseLeave$ = new Subject<MouseEvent>();
-  public onMouseMove$ = new Subject<any>();
-  public newItemAdd$: Subject<any> = new Subject();
-
-  private subscriptions: Subscription[] = [];
-
-  constructor(private gridDragService: CatGridDragService,
-              private gridPositionService: CatGridValidationService,
-              private elementRef: ElementRef) {
-    const dragOver$ = this.combineEqualScreen(this.gridDragService.draggingObservable(), this.mouseMoveObservable());
-    const drop$ = this.combineEqualScreen(this.gridDragService.dropObservable(), this.mouseUpObservable());
-
-    this.subscriptions.push(dragOver$.subscribe(({item, event}) => this.dragInside(item, event)));
-    this.subscriptions.push(drop$.subscribe(({item, event}) => this.dropInside(item, event)));
+  constructor(private elementRef: ElementRef,
+              private changeDetectorRef: ChangeDetectorRef,
+              private gridDragService: CatGridDragService,
+              private gridPositionService: CatGridValidationService) {
   }
 
   ngOnInit() {
-    const {inside, outside, release} = this.gridDragService.registerGrid(this);
-    this.subscriptions.push(inside.subscribe(v => this.itemDraggedInside(v)));
-    this.subscriptions.push(outside.subscribe(v => this.itemDragOutside()));
-    this.subscriptions.push(release.subscribe(v => this.itemReleased(v)));
+    this.gridDragService.itemDroppedObservable()
+      .takeUntil(this.destroyed$)
+      .subscribe(droppedItem => {
+        if (droppedItem) {
+          const index = this.displayedItems.findIndex(item => item.id === droppedItem.id);
+          let changed = false;
+
+          if (index > -1) {
+            this.displayedItems.splice(index, 1);
+            changed = true;
+          }
+
+          if (this.droppedItem) {
+            this.displayedItems.push(this.droppedItem);
+            this.droppedItem = null;
+            changed = true;
+          }
+
+          if (changed) {
+            this.onItemsChange.emit(this.displayedItems);
+          }
+        }
+        this.itemsComponents.forEach(item => item.show());
+        this.changeDetectorRef.markForCheck();
+      });
   }
 
-  ngOnDestroy(): any {
-    this.subscriptions.forEach(s => s.unsubscribe());
-    this.ngGrid._items.forEach(item => item.ngOnDestroy());
-    this.gridDragService.unregisterGrid(this);
+  ngOnDestroy() {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+
+    this.itemsComponents.forEach(item => item.ngOnDestroy());
+  }
+
+  ngOnChanges(changes: any) {
+    const config = changes.config;
+
+    if (config) {
+      this.setSize();
+    }
+
+    if (changes.items) {
+      // remove items which not longer are displayed
+      this.displayedItems = this.displayedItems.filter(item => changes.items.currentValue
+        .find((changedItem: any) => item.id === changedItem.id));
+      changes.items.currentValue.forEach((item: any) => {
+        const i = this.displayedItems.findIndex(displayedItem => displayedItem.id === item.id);
+        if (i < 0) {
+          // it is a new item
+          this.displayedItems.push(item);
+        } else {
+          // this is an old item
+          const itemRef = this.itemsComponents.find(cmp => cmp.config.id === item.id);
+          if (itemRef) {
+            const oldConfig = changes.items.previousValue.find((i: any) => i.id === item.id);
+            // if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
+              itemRef.applyConfigChanges(item);
+            // }
+            itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
+          }
+        }
+      });
+    }
   }
 
   @HostListener('mousemove', ['$event'])
-  private onMouseMove(e: MouseEvent) {
-    this.mouseMove$.next(e);
-    this.onMouseMove$.next(this.toObserverEvent(e));
-    e.preventDefault();
-  }
-
-  @HostListener('mouseleave', ['$event'])
-  private onMouseLeave(e: MouseEvent) {
-    this.mouseLeave$.next(e);
-    this.hidePlaceholder();
-  }
-
-  @HostListener('mousedown', ['$event'])
-  private onMouseDown(e: any) {
-    e.preventDefault();
-    const i = this.ngGrid.getItem(e);
-    if (i && i.canDrag(e)) {
-      this.gridDragService.dragStart(i, this, e);
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
+  onMouseMove(e: any) {
+    if (!e.dirty && (e.target === this.elementRef.nativeElement || this.elementRef.nativeElement.contains(e.target))) {
+      e.dirty = true;
+      if (!!this.gridDragService.dragConfig) {
+        this.gridDragService.mouseMoveInside(e);
+        this.showPlaceholder(this.gridDragService.dragConfig, e);
+      } else {
+        this.hidePlaceholder();
+      }
+    } else {
+      this.hidePlaceholder();
     }
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave() {
+    this.hidePlaceholder();
   }
 
   @HostListener('mouseup', ['$event'])
-  private onMouseUp(e: MouseEvent) {
-    this.hidePlaceholder();
-    this.mouseUp$.next(e);
-  }
-
-  public mouseMoveObservable(): Observable<MouseEvent> {
-    return this.mouseMove$.asObservable();
-  }
-
-  public mouseUpObservable() {
-    return this.mouseUp$.asObservable();
-  }
-
-  private combineEqualScreen(o1$: Observable<ItemDragEvent>, o2$: Observable<MouseEvent>): Observable<ItemDragEvent> {
-    return o1$.withLatestFrom(o2$)
-      .filter(([{event}, mouseMoveEvent]) => CatGridDragService.equalScreenPosition(event, mouseMoveEvent))
-      .map(([itemDragEvent]) => itemDragEvent);
-  }
-
-  private dragInside(item: CatGridItemConfig, event: MouseEvent) {
-    if (event.buttons == 0) {
-      // fix additional drag-event after mouse was released
+  onMouseUp(e: any) {
+    if (e.dirty) {
       return;
     }
-    const conf = this.itemConfigFromEvent(item, event);
-
-    this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
-        .validateGridPosition(conf.col!!, conf.row!!, conf, this.config)
-      && !this.hasCollisions(conf);
-    if (!this.ngGrid._placeholderRef.instance.valid) {
-      this.cursor = 'no-drop';
-    } else {
-      this.cursor = 'auto';
+    e.dirty = true;
+    if (!!this.gridDragService.dragConfig) {
+      this.gridDragService.mouseUpInside(e);
+      const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e);
+      if (this.validPosition(config)) {
+        this.droppedItem = config;
+        this.gridDragService.stopDrag();
+        this.gridDragService.itemDropped(config);
+      } else {
+        this.gridDragService.itemDropped(null);
+      }
+      this.hidePlaceholder();
     }
-    this.ngGrid._placeholderRef.instance.setSize(item.sizex, item.sizey);
-    this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
+    this.gridDragService.stopDrag();
   }
 
-  private dropInside(item: any, event: any) {
-    const conf = this.itemConfigFromEvent(item, event);
-    this.hidePlaceholder();
-    if (this.gridPositionService.validateGridPosition(conf.col, conf.row, item, this.config)
-      && !this.hasCollisions(conf)) {
-      this.items.push(conf);
-      this.gridDragService.itemAdded$.next(this.gridDragService.getPlacedItems());
+  itemDataChanged(data: any, id: string) {
+    const index = this.displayedItems.findIndex(item => item.id === id);
+    if (index > -1) {
+      this.displayedItems[index].component.data = data;
+      this.onItemsChange.emit(this.displayedItems);
     }
+    this.changeDetectorRef.markForCheck();
   }
 
-  private validPosition(item: CatGridItemConfig, event: MouseEvent) {
-    const conf = this.itemConfigFromEvent(item, event);
-    return this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, conf, this.config)
-      && !this.hasCollisions(item);
+  getXForItem(config: CatGridItemConfig) {
+    return (config.col - 1) * this.config.colWidth;
   }
 
-  resizeFinished(itemComponent: CatGridItemComponent) {
-    this.itemResizeStop.emit(itemComponent.config);
-    this.items.push(itemComponent.config);
-    const ids = this.items.map(i => i.id);
-    this.items = this.items.filter((item, i, arr) => ids.indexOf(item.id) === i);
+  getYForItem(config: CatGridItemConfig) {
+    return (config.row - 1) * this.config.rowHeight;
   }
 
-  public itemDraggedInside(v: any) {
-    if (this.gridDragService.draggedItem) {
-      const {item, event} = v.itemDragged;
+  setSize() {
+    this.width = this.config.maxCols * this.config.colWidth;
+    this.height = this.config.maxRows * this.config.rowHeight;
+  }
 
-      const conf = this.itemConfigFromEvent(item.config, event.event);
-      const dims = item.getSize();
-      this.ngGrid._placeholderRef.instance.valid = this.gridPositionService
-          .validateGridPosition(conf.col!!, conf.row!!, item.config, this.config)
-        && !this.hasCollisions(conf)
-        && !this.isOutsideGrid(conf, {
-          columns: this.config.maxCols,
-          rows: this.config.maxRows
-        });
-      if (!this.ngGrid._placeholderRef.instance.valid) {
+  showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
+    const placeholders = document.getElementsByClassName('grid-placeholder');
+    for (let i = 0; i < placeholders.length; ++i) {
+      (placeholders[i] as HTMLElement).style.display = 'none';
+    }
+
+    const newConfig = this.itemConfigFromEvent(config, e);
+    const x = this.getXForItem(newConfig);
+    const y = this.getYForItem(newConfig);
+    const width = newConfig.sizex * this.config.colWidth;
+    const height = newConfig.sizey * this.config.rowHeight;
+
+    // only revalidate if position changed
+    if (x !== this.placeholder.x || y !== this.placeholder.y
+      || width !== this.placeholder.width || height !== this.placeholder.height) {
+      const valid = this.validPosition(newConfig);
+      if (valid) {
+        this.cursor = 'pointer';
+      } else {
         this.cursor = 'no-drop';
-      } else {
-        this.cursor = 'auto';
       }
-      this.ngGrid._placeholderRef.instance.setSize(dims.x, dims.y);
-      this.ngGrid._placeholderRef.instance.setGridPosition(conf.col!!, conf.row!!);
+      this.placeholder.setValid(valid);
     }
+
+    this.placeholder.setPosition(x, y);
+    this.placeholder.setSize(width, height);
+    this.placeholder.show();
+    this.changeDetectorRef.markForCheck();
   }
 
-  public itemDragOutside() {
-    this.hidePlaceholder();
+  hidePlaceholder() {
+    this.cursor = 'auto';
+    this.placeholder.hide();
   }
 
-  public itemReleased(v: any) {
-    const conf = this.itemConfigFromEvent(v.release.item.config, v.move.event);
-    this.hidePlaceholder();
-
-    if (this.gridPositionService.validateGridPosition(conf.col!!, conf.row!!, v.release.item.config, this.config)
-      && !this.hasCollisions(conf)
-      && !this.isOutsideGrid(conf, {columns: this.config.maxCols, rows: this.config.maxRows})) {
-      this.newItemAdd$.next({
-        grid: this,
-        newConfig: conf,
-        oldConfig: v.release.item.config,
-        event: v.release.event
-      });
-    }
-    v.release.item.stopMoving();
+  validPosition(config: CatGridItemConfig) {
+    return this.gridPositionService.validateGridPosition(config.col, config.row, config, this.config)
+      && !this.hasCollisions(config);
   }
 
-  private hidePlaceholder() {
-    this.ngGrid._placeholderRef.instance.setSize(0, 0);
-    if (!this.ngGrid._placeholderRef.instance.valid) {
-      this.cursor = 'no-drop';
-    } else {
-      this.cursor = 'auto';
-    }
-  }
-
-  private itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
-    const refPos = this.ngGrid._ngEl.nativeElement.getBoundingClientRect();
-    const left = event.clientX - refPos.left;
-    const top = event.clientY - refPos.top;
-    let positionX = left;
-    let positionY = top;
-    if (this.gridDragService.posOffset.left && this.gridDragService.posOffset.top) {
-      positionX -= this.gridDragService.posOffset.left;
-      positionY -= this.gridDragService.posOffset.top;
-    }
-    const {col, row} = this.ngGrid._calculateGridPosition(positionX, positionY);
-    return Object.assign({}, config, {col, row});
-  }
-
-  private hasCollisions(itemConf: CatGridItemConfig): boolean {
-    return this.items.filter(c => c.id !== itemConf.id)
-      .some((conf: CatGridItemConfig) => intersect(toRectangle(conf), toRectangle(itemConf)));
-  }
-
-  private isOutsideGrid(item: CatGridItemConfig, gridSize: any): boolean {
-    const {col, row} = item;
-    const {sizex, sizey} = item;
-    return (col + sizex - CatGridComponent.GRID_POSITIONS_OFFSET > gridSize.columns)
-      || (row + sizey - CatGridComponent.GRID_POSITIONS_OFFSET > gridSize.rows);
-  }
-
-  public removeItem(item: CatGridItemConfig) {
-    let removed = false;
-    this.items = this.items.filter(i => {
-      if (i.col === item.col && i.row === item.row && !removed) {
-        removed = true;
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-
-  public removeItemById(id: string) {
-    this.items = this.items.filter(i => i.id !== id);
-  }
-
-  public addItem(item: CatGridItemConfig) {
-    this.items = this.items.concat([item]);
-  }
-
-  private toObserverEvent(event: any) {
+  getMousePos(event: MouseEvent) {
+    const rect = this.elementRef.nativeElement.getBoundingClientRect();
+    const nodeConfig = this.gridDragService.nodeConfig;
     return {
-      grid: this,
-      event,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
     };
   }
 
-  public isPositionInside(event: any): boolean {
-    return this.ngGrid.isPositionInside(event);
+  getGridPosition(x: number, y: number) {
+    return {
+      col: Math.floor(x / this.config.colWidth) + 1,
+      row: Math.floor(y / this.config.rowHeight) + 1,
+    }
+  }
+
+  itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
+    const {x, y} = this.getMousePos(event);
+    let {col, row} = this.getGridPosition(x, y);
+
+    // if position is outside, keep the current position on each axis accordingly
+    if (col + config.sizex - 1 > this.config.maxCols) {
+      col = this.config.maxCols - config.sizex + 1;
+    }
+    if (row + config.sizey - 1 > this.config.maxRows) {
+      row = this.config.maxRows - config.sizey + 1;
+    }
+    if (col <= 0) {
+      col = 1;
+    }
+    if (row <= 0) {
+      row = 1;
+    }
+    return Object.assign({}, config, {col, row});
+  }
+
+  hasCollisions(itemConf: CatGridItemConfig): boolean {
+    return this.displayedItems.filter(c => c.id !== itemConf.id)
+      .some((conf: CatGridItemConfig) => intersect(toRectangle(conf), toRectangle(itemConf)));
   }
 }

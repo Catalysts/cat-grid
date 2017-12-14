@@ -1,5 +1,5 @@
 export class CatGridItemConfig {
-  id?: string;
+  id: string;
   col?: number;
   row?: number;
   sizex?: number;
@@ -11,7 +11,8 @@ export class CatGridItemConfig {
   component?: any;
 }
 
-export const ITEM_DEFAULT_CONFIG = {
+export const ITEM_DEFAULT_CONFIG: CatGridItemConfig = {
+  id: '1',
   col: 1,
   row: 1,
   sizex: 1,

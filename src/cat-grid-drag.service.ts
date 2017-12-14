@@ -1,202 +1,109 @@
-import {Injectable} from '@angular/core';
-import {CatGridComponent} from './cat-grid/cat-grid.component';
-import {Observable, Subject} from 'rxjs/Rx';
-import {CatGridItemConfig} from './cat-grid-item/cat-grid-item.config';
-import {CatGridItemComponent} from './cat-grid-item/cat-grid-item.component';
-import {isArray} from 'rxjs/util/isArray';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs/Rx';
+import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
+import { Subject } from 'rxjs/Subject';
 
-export interface ItemDragEvent {
-  item: CatGridItemConfig;
-  event: MouseEvent;
-}
-
+/**
+ * Angular service used to control the dragging.
+ * The service handles a global (appended to body) element where it holds the needed HtmlElement to drag.
+ * It also holds the CatGridItemConfig of the dragged element so other components (e.g. CatGridComponent)
+ * can use it when dragging over them.
+ *
+ * The method startDrag is used when we have to start dragging an element.
+ * The method stopDrag NEEDS to be used when stopping the drag (so that the dragging element is removed from the body).
+ */
 @Injectable()
 export class CatGridDragService {
-  private window = window;
-  public itemDragged$: Observable<any>;
-  public itemReleased$: Subject<any> = new Subject();
-  public itemAdded$: Subject<any> = new Subject();
-  private windowMouseMove$: Observable<any>;
-  private windowMouseUp$: Observable<any>;
-  public draggedItem: CatGridItemComponent | null;
-  public initialGrid: CatGridComponent | null;
-  public dragItemConf: CatGridItemConfig | null;
-  private grids: Array<CatGridComponent> = [];
+  windowMouseMove$: Observable<MouseEvent>;
+  windowMouseUp$: Observable<MouseEvent>;
+  mouseMoveInside$ = new Subject<MouseEvent>();
+  mouseUpInside$ = new Subject<MouseEvent>();
+  droppedItem$ = new Subject<CatGridItemConfig | null>();
 
-  private dragging$ = new Subject<ItemDragEvent>();
-  private drop$ = new Subject<ItemDragEvent>();
+  dragConfig: CatGridItemConfig | null = null;
+  dragNode: HTMLElement | null = null;
+  container: HTMLElement;
 
-  public posOffset: any = {};
+  nodeConfig: {
+    clientX: number,
+    clientY: number,
+    left: number,
+    top: number,
+  };
 
-  private removing: boolean = false;
-
-  public static equalScreenPosition(e1: any, e2: any): boolean {
-    return e1 && e2 && e1.screenX === e2.screenX && e1.screenY === e2.screenY;
+  constructor() {
+    this.windowMouseMove$ = Observable.fromEvent(window, 'mousemove').merge(this.mouseMoveInside$.asObservable());
+    this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup');
+    this.container = document.createElement('span');
+    document.body.appendChild(this.container);
   }
 
-  public constructor() {
-    this.windowMouseMove$ = Observable.fromEvent(this.window, 'mousemove').map(e => ({grid: null, event: e}));
-    this.windowMouseUp$ = Observable.fromEvent(this.window, 'mouseup').map(e => ({
-      grid: null,
-      event: e,
-      item: this.draggedItem
-    }));
+  /**
+   * Method used to start a drag. It will create a new element, identical to the one sent as parameter.
+   * It will append it to the body and move it around as the mouse moves.
+   *
+   * @param {CatGridItemConfig} config - the configuration of the element dragged.
+   * @param {MouseEvent} e - mouse event which started the drag.
+   * @param {HTMLElement} node - the node of the element being dragged (used for copying it to the body).
+   */
+  startDrag(config: CatGridItemConfig, e: MouseEvent, node: HTMLElement | null) {
+    this.dragConfig = config;
 
-    this.itemDragged$ = this.windowMouseMove$
-      .filter(() => !!this.draggedItem)
-      .map(event => ({
-        item: this.draggedItem,
-        event
-      }));
+    if (node !== null && !!e) {
+      this.dragNode = node.cloneNode(true) as HTMLElement;
+      this.dragNode.style.transform = '';
+      this.dragNode.style.pointerEvents = 'none';
+      this.dragNode.style.position = 'fixed';
+      this.dragNode.style.zIndex = '9999';
 
-    this.windowMouseUp$.subscribe(e => this.mouseUp(e));
-  }
+      this.nodeConfig = {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        left: node.getBoundingClientRect().left,
+        top: node.getBoundingClientRect().top,
+      };
 
-  public draggingObservable(): Observable<ItemDragEvent> {
-    return this.dragging$.asObservable();
-  }
+      this.dragNode.style.top = this.nodeConfig.top + 'px';
+      this.dragNode.style.left = this.nodeConfig.left + 'px';
+      this.container.appendChild(this.dragNode);
 
-  public dropObservable(): Observable<ItemDragEvent> {
-    return this.drop$.asObservable();
-  }
+      this.windowMouseMove$
+        .filter(() => !!this.dragNode)
+        .takeUntil(this.windowMouseUp$.merge(this.mouseUpInside$.asObservable()))
+        .subscribe((event: MouseEvent) => this.dragNode.style.transform = `translate(
+          ${event.clientX - this.nodeConfig.clientX}px,
+          ${event.clientY - this.nodeConfig.clientY}px
+        )`);
 
-  public addDraggingSource(dragSource$: Observable<ItemDragEvent>, dropSource$: Observable<ItemDragEvent>) {
-    dragSource$.subscribe(e => this.dragging$.next(e));
-    dropSource$.subscribe(e => this.drop$.next(e));
-  }
-
-  public removeItemById(id: string) {
-    this.removing = true;
-    this.grids.forEach(grid => {
-      if (grid.items.map(item => item.id).indexOf(id) > -1) {
-        grid.removeItemById(id);
-        this.removing = false;
-        this.changeSubgridItemsConfig(grid.ngGrid._config.id, grid.items);
-      }
-    });
-  }
-
-  public getPlacedItems() {
-    return this.grids[0].items;
-  }
-
-  public unregisterGrid(grid: CatGridComponent) {
-    let index = this.grids.indexOf(grid, 0);
-    if (index > -1) {
-      this.grids.splice(index, 1);
-    }
-  }
-
-  public registerGrid(grid: CatGridComponent) {
-    const mouseMoveCombined = grid.onMouseMove$.merge(this.windowMouseMove$);
-    const dragCombined = mouseMoveCombined
-      .withLatestFrom(this.itemDragged$, (x, y) => ({
-        itemDragged: y,
-        event: x.event,
-        grid: x.grid
-      }));
-    const outside = dragCombined.filter(it => it.grid == null && !!this.draggedItem);
-    const inside = dragCombined.filter(it => {
-      if (!(it.grid != null && this.draggedItem)) {
-        return false;
-      }
-      let isChildGrid = false;
-      for (let gridIter of this.grids) {
-        if (gridIter === grid) {
-          isChildGrid = true;
-        } else if (isChildGrid) {
-          if (gridIter.isPositionInside(it.event)) {
-            // we are dragging over a child-grid, we don't want to propagate such drag-events to the
-            //  parent grid
-            // console.log('not propagating event because of nested grid');
-            // NOTE: would be cleaner to do this by inserting an artificial event into the outside observable
-            grid.itemDragOutside();
-            return false;
-          }
-        }
-      }
-      return true;
-    });
-
-    const release = this.itemReleased$.withLatestFrom(inside, (x, y) => ({release: x, move: y}))
-      .filter(x => CatGridDragService.equalScreenPosition(x.release.event, x.move.event));
-    grid.newItemAdd$
-      .merge(this.windowMouseUp$)
-      .filter(x => !x.grid)
-      .subscribe((x) => {
-        if (this.initialGrid && this.draggedItem) {
-          this.initialGrid.removeItem(this.draggedItem.config);
-          this.initialGrid.addItem(this.draggedItem.config);
-          this.draggedItem = null;
-          this.initialGrid = null;
-        }
-      });
-
-    grid.newItemAdd$.subscribe(v => {
-      if (this.initialGrid) {
-        this.initialGrid.removeItem(v.oldConfig);
-        this.changeSubgridItemsConfig(this.initialGrid.ngGrid._config.id, this.initialGrid.items);
-      }
-      this.draggedItem = null;
-      this.initialGrid = null;
-      this.changeSubgridItemsConfig(grid.ngGrid._config.id, grid.items.concat(v.newConfig));
-      grid.addItem(v.newConfig);
-      this.itemAdded$.next(this.getPlacedItems());
-    });
-    this.itemDragged$.throttleTime(1).subscribe(v => this.mouseMove(v.event.event));
-    this.grids.push(grid);
-    return {
-      inside,
-      outside,
-      release
-    };
-  }
-
-  private changeSubgridItemsConfig(id: string, items: CatGridItemConfig[]) {
-    this.changeSubgridItemsConfigAux(id, items, this.getPlacedItems());
-  }
-
-  private changeSubgridItemsConfigAux(id: string, items: CatGridItemConfig[], placedItems: CatGridItemConfig[]) {
-    const subgridIndex = placedItems.findIndex(item => {
-      if (isArray(item.component.data.items)) {
-        if (item.id == id) {
-          return true;
-        } else if (item.component.data.items.length > 0) {
-          this.changeSubgridItemsConfigAux(id, items, item.component.data.items);
-        }
-      }
-      return false;
-    });
-    if (subgridIndex > -1) {
-      placedItems[subgridIndex].component.data.items = items;
-    }
-  }
-
-  public mouseMove(event: any) {
-    if (this.draggedItem) {
-      this.draggedItem.move(event, this.posOffset);
-    }
-  }
-
-  public mouseUp(event: any) {
-    if (this.draggedItem) {
-      this.itemReleased$.next({
-        item: this.draggedItem,
-        event: event.event,
+      this.windowMouseUp$.subscribe(() => {
+        this.itemDropped(null);
+        this.stopDrag();
       });
     }
   }
 
-  public dragStart(item: CatGridItemComponent, grid: CatGridComponent, event: any) {
-    event.preventDefault();
-    this.draggedItem = item;
-    this.initialGrid = grid;
-    const itemPos = item.getPagePosition();
-    this.posOffset = {'left': (event.pageX - itemPos.left), 'top': (event.pageY - itemPos.top)};
-    item.startMoving();
+  mouseMoveInside(event: MouseEvent) {
+    this.mouseMoveInside$.next(event);
   }
 
-  public bringToFront(itemId: string) {
-    this.grids[0].ngGrid.bringToFront(itemId);
+  mouseUpInside(event: MouseEvent) {
+    this.mouseUpInside$.next(event);
+  }
+
+  /**
+   * Clears the current dragging element and the configuration stored.
+   */
+  stopDrag() {
+    this.container.innerHTML = '';
+    this.dragConfig = null;
+    this.dragNode = null;
+  }
+
+  itemDropped(item: CatGridItemConfig | null) {
+    this.droppedItem$.next(item);
+  }
+
+  itemDroppedObservable() {
+    return this.droppedItem$.asObservable();
   }
 }
