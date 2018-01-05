@@ -42,6 +42,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   @ViewChild('componentContainer', {read: ViewContainerRef})
   private componentContainer: ViewContainerRef;
 
+  @HostBinding('style.z-index')
+  private zIndex: number = 2;
+
   @HostBinding('style.cursor')
   private cursor: string;
 
@@ -101,49 +104,56 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
         this.changeDetectorRef.markForCheck();
       });
 
-    this.resize$ = this.resizeStart$.flatMap((dragStart: MouseEvent) => this.mouseMove$.map((mm: MouseEvent) => {
-      mm.preventDefault();
+    this.resize$ = this.resizeStart$.flatMap((dragStart: MouseEvent) => {
+      const initialHeight = this.elemHeight;
+      const initialWidth = this.elemWidth;
+      const type = this.canResize(dragStart);
+      return this.mouseMove$.map((mm: MouseEvent) => {
+        mm.preventDefault();
 
-      const newWidth = this.elemHeight + Math.max(mm.clientX - dragStart.clientX, 100);
-      const newHeight = this.elemWidth + Math.max(mm.clientY - dragStart.clientY, 100);
+        const newWidth = initialWidth + mm.clientX - dragStart.clientX;
+        const newHeight = initialHeight + mm.clientY - dragStart.clientY;
 
-      return {
-        newWidth,
-        newHeight,
-        event: mm
-      };
-    })
-      .takeUntil(this.mouseUp$)
-      .do(
-        size => this.onResize.emit({x: this.config.col, y: this.config.row, width: size.newWidth, height: size.newHeight}),
-        null,
-        () => {
-          this.onResizeStop.emit({x: this.config.col, y: this.config.row, width: this.elemWidth, height: this.elemHeight});
+        return {
+          newWidth,
+          newHeight,
+          event: mm,
+          type
+        };
+      })
+        .takeUntil(Observable.fromEvent(window, 'mouseup'))
+        .do(
+          size => {},
+          null,
+          () => {
+            this.onResizeStop.emit({x: this.config.col, y: this.config.row, width: this.elemWidth, height: this.elemHeight});
 
-          if (this.componentRef.instance.catGridItemLoaded) {
-            this.componentRef.instance.catGridItemLoaded(this.config);
+            if (this.componentRef.instance.catGridItemLoaded) {
+              this.componentRef.instance.catGridItemLoaded(this.config);
+            }
+            this.changeDetectorRef.markForCheck();
           }
-          this.changeDetectorRef.markForCheck();
-        }
-      ));
+        );
+    });
 
     this.resize$
       .takeUntil(this.destroyed$)
       .subscribe(size => {
-        const type = this.setResizeCursor(size.event);
+        const {type} = size;
 
         let newWidth = this.elemWidth;
         let newHeight = this.elemHeight;
 
         if (type === 'both' || type === 'width') {
           newWidth = size.newWidth;
+          this.onResize.emit({x: this.config.col, y: this.config.row, width: size.newWidth, height: this.elemHeight});
         }
         if (type === 'both' || type === 'height') {
           newHeight = size.newHeight;
+          this.onResize.emit({x: this.config.col, y: this.config.row, width: this.elemWidth, height: size.newHeight});
         }
 
         this.setSize(newWidth, newHeight);
-        this.changeDetectorRef.markForCheck();
       });
   }
 
@@ -212,15 +222,27 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     if (!this.config.resizable) {
       return null;
     }
-
-    if (e.offsetX < this.elemWidth && e.offsetX > this.elemWidth - this.config.borderSize
-      && e.offsetY < this.elemHeight && e.offsetY > this.elemHeight - this.config.borderSize) {
+    const refPos = this.elementRef.nativeElement.getBoundingClientRect();
+    const mousePos = {
+      left: e.clientX - refPos.left,
+      top: e.clientY - refPos.top
+    };
+    if (mousePos.left < this.elemWidth && mousePos.left > this.elemWidth - 10
+      && mousePos.top < this.elemHeight && mousePos.top > this.elemHeight - 10) {
       return 'both';
-    } else if (e.offsetX < this.elemWidth && e.offsetX > this.elemWidth - this.config.borderSize) {
+    } else if (mousePos.left < this.elemWidth && mousePos.left > this.elemWidth - 10) {
       return 'width';
-    } else if (e.offsetY < this.elemHeight && e.offsetY > this.elemHeight - this.config.borderSize) {
+    } else if (mousePos.top < this.elemHeight && mousePos.top > this.elemHeight - 10) {
       return 'height';
     }
+    // if (e.offsetX < this.elemWidth && e.offsetX > this.elemWidth - this.config.borderSize
+    //   && e.offsetY < this.elemHeight && e.offsetY > this.elemHeight - this.config.borderSize) {
+    //   return 'both';
+    // } else if (e.offsetX < this.elemWidth && e.offsetX > this.elemWidth - this.config.borderSize) {
+    //   return 'width';
+    // } else if (e.offsetY < this.elemHeight && e.offsetY > this.elemHeight - this.config.borderSize) {
+    //   return 'height';
+    // }
 
     return null;
   }

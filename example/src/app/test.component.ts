@@ -5,9 +5,12 @@ import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'test',
-  template: `<span>test</span>`
+  template: `<div style="background-color: red; width: 100%; height: 100%">test</div>`
 })
 export class TestComponent implements ICatGridItemComponent{
+  configChangedObservable(): Observable<CatGridItemConfig> {
+    return Observable.empty();
+  }
   catGridItemLoaded(config: CatGridItemConfig): void {
   }
 

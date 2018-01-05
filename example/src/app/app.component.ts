@@ -29,7 +29,8 @@ export class AppComponent {
     row: 2,
     sizex: 4,
     sizey: 1,
-    draggable: false,
+    draggable: true,
+    resizable: true,
     component: {
       type: TestComponent,
       data: {}

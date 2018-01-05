@@ -15,14 +15,15 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import { Subject } from 'rxjs/Rx';
-import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
-import { CatGridConfig } from './cat-grid.config';
-import { CatGridDragService } from '../cat-grid-drag.service';
-import { CatGridValidationService } from '../cat-grid-validation.service';
-import { intersect, toRectangle } from './utils';
-import { CatGridPlaceholderComponent } from '../cat-grid-placeholder/cat-grid-placeholder.component';
-import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
+import {Subject} from 'rxjs/Rx';
+import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
+import {CatGridConfig} from './cat-grid.config';
+import {CatGridDragService} from '../cat-grid-drag.service';
+import {CatGridValidationService} from '../cat-grid-validation.service';
+import {intersect, toRectangle} from './utils';
+import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/cat-grid-placeholder.component';
+import {CatGridItemComponent} from '../cat-grid-item/cat-grid-item.component';
+import {CatGridItemEvent} from '../cat-grid-item/cat-grid-item.event';
 
 @Component({
   selector: 'cat-grid',
@@ -33,6 +34,8 @@ import { CatGridItemComponent } from '../cat-grid-item/cat-grid-item.component';
                    [colWidth]="config.colWidth"
                    [rowHeight]="config.rowHeight"
                    (dataChanged)="itemDataChanged($event, item.id)"
+                   (onResize)="itemResizing($event, item.id)"
+                   (onResizeStop)="itemResizeStop($event, item.id)"
                    *ngFor="let item of displayedItems">
     </cat-grid-item>
     <cat-grid-placeholder class="grid-placeholder"></cat-grid-placeholder>
@@ -62,6 +65,50 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
               private changeDetectorRef: ChangeDetectorRef,
               private gridDragService: CatGridDragService,
               private gridPositionService: CatGridValidationService) {
+  }
+
+  getSizeFromPx(px: number) {
+    return Math.max(1, Math.ceil(px / this.config.colWidth));
+  }
+
+  itemResizing(ev: CatGridItemEvent, id: string) {
+    const idx = this.displayedItems.findIndex(i => i.id === id)
+    if (idx >= 0) {
+      const itemConfig = this.displayedItems[idx];
+      let newSizeX = this.getSizeFromPx(ev.width);
+      if (newSizeX + itemConfig.col > this.config.maxCols) {
+        newSizeX = this.config.maxCols - itemConfig.col + 1;
+      }
+      let newSizeY = this.getSizeFromPx(ev.height);
+      if (newSizeY + itemConfig.row > this.config.maxRows) {
+        newSizeY = this.config.maxRows - itemConfig.row + 1;
+      }
+      const newConfig = {...itemConfig, sizex: newSizeX, sizey: newSizeY};
+      this.showPlaceholder(this.gridDragService.dragConfig, newConfig);
+    }
+  }
+
+  itemResizeStop(ev: CatGridItemEvent, id: string) {
+    const idx = this.displayedItems.findIndex(i => i.id === id)
+    if (idx >= 0) {
+      const itemConfig = this.displayedItems[idx];
+      let newSizeX = this.getSizeFromPx(ev.width);
+      if (newSizeX + itemConfig.col > this.config.maxCols) {
+        newSizeX = this.config.maxCols - itemConfig.col + 1;
+      }
+      let newSizeY = this.getSizeFromPx(ev.height);
+      if (newSizeY + itemConfig.row > this.config.maxRows) {
+        newSizeY = this.config.maxRows - itemConfig.row + 1;
+      }
+      const newConfig = {...itemConfig, sizex: newSizeX, sizey: newSizeY};
+      if (this.validPosition(newConfig)) {
+        this.displayedItems.splice(idx, 1);
+        this.displayedItems.push(newConfig);
+        this.onItemsChange.emit(this.displayedItems);
+        this.itemsComponents.forEach(item => item.show());
+        this.changeDetectorRef.markForCheck();
+      }
+    }
   }
 
   ngOnInit() {
@@ -121,7 +168,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
           if (itemRef) {
             const oldConfig = changes.items.previousValue.find((i: any) => i.id === item.id);
             // if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
-              itemRef.applyConfigChanges(item);
+            itemRef.applyConfigChanges(item);
             // }
             itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
           }
@@ -136,7 +183,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       e.dirty = true;
       if (!!this.gridDragService.dragConfig) {
         this.gridDragService.mouseMoveInside(e);
-        this.showPlaceholder(this.gridDragService.dragConfig, e);
+        this.showPlaceholder(this.gridDragService.dragConfig, this.itemConfigFromEvent(this.gridDragService.dragConfig, e));
       } else {
         this.hidePlaceholder();
       }
@@ -193,13 +240,12 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     this.height = this.config.maxRows * this.config.rowHeight;
   }
 
-  showPlaceholder(config: CatGridItemConfig, e: MouseEvent) {
+  showPlaceholder(config: CatGridItemConfig, newConfig: CatGridItemConfig) {
     const placeholders = document.getElementsByClassName('grid-placeholder');
     for (let i = 0; i < placeholders.length; ++i) {
       (placeholders[i] as HTMLElement).style.display = 'none';
     }
 
-    const newConfig = this.itemConfigFromEvent(config, e);
     const x = this.getXForItem(newConfig);
     const y = this.getYForItem(newConfig);
     const width = newConfig.sizex * this.config.colWidth;
