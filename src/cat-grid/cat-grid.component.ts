@@ -104,7 +104,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       if (this.validPosition(newConfig)) {
         this.displayedItems.splice(idx, 1);
         this.displayedItems.push(newConfig);
-        this.onItemsChange.emit(this.displayedItems);
+        this.onItemsChange.emit(this.items);
         this.itemsComponents.forEach(item => item.show());
         this.changeDetectorRef.markForCheck();
       }
@@ -126,12 +126,13 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
           if (this.droppedItem) {
             this.displayedItems.push(this.droppedItem);
+            this.items.push(this.droppedItem);
             this.droppedItem = null;
             changed = true;
           }
 
           if (changed) {
-            this.onItemsChange.emit(this.displayedItems);
+            this.onItemsChange.emit(this.items);
           }
         }
         this.itemsComponents.forEach(item => item.show());
@@ -155,8 +156,14 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
     if (changes.items) {
       // remove items which not longer are displayed
-      this.displayedItems = this.displayedItems.filter(item => changes.items.currentValue
-        .find((changedItem: any) => item.id === changedItem.id));
+      this.displayedItems.forEach((item, i) => {
+        const currentIdx = changes.items.currentValue.findIndex((cItem: any) => cItem.id === item.id);
+        if (currentIdx < 0) {
+          this.displayedItems.splice(i, 1);
+        }
+      });
+      // this.displayedItems = this.displayedItems.filter(item => changes.items.currentValue
+      //   .find((changedItem: any) => item.id === changedItem.id));
       changes.items.currentValue.forEach((item: any) => {
         const i = this.displayedItems.findIndex(displayedItem => displayedItem.id === item.id);
         if (i < 0) {
@@ -167,14 +174,14 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
           const itemRef = this.itemsComponents.find(cmp => cmp.config.id === item.id);
           if (itemRef) {
             const oldConfig = changes.items.previousValue.find((i: any) => i.id === item.id);
-            // if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
-            itemRef.applyConfigChanges(item);
-            // }
-            itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
-            this.displayedItems[i] = item;
+            if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
+              itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
+              itemRef.applyConfigChanges(item);
+            }
           }
         }
       });
+      this.changeDetectorRef.markForCheck();
     }
   }
 
@@ -223,7 +230,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     const index = this.displayedItems.findIndex(item => item.id === id);
     if (index > -1) {
       this.displayedItems[index].component.data = data;
-      this.onItemsChange.emit(this.displayedItems);
+      this.items[index].component.data = data;
+      this.onItemsChange.emit(this.items);
     }
     this.changeDetectorRef.markForCheck();
   }
