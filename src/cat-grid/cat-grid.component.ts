@@ -171,6 +171,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
             itemRef.applyConfigChanges(item);
             // }
             itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
+            this.displayedItems[i] = item;
           }
         }
       });
