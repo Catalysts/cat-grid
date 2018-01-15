@@ -121,6 +121,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
           if (index > -1) {
             this.displayedItems.splice(index, 1);
+            this.items.splice(index, 1);
             changed = true;
           }
 
@@ -175,8 +176,9 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
           if (itemRef) {
             const oldConfig = changes.items.previousValue.find((i: any) => i.id === item.id);
             if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
-              itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
-              itemRef.applyConfigChanges(item);
+              // itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
+              // itemRef.applyConfigChanges(item);
+              this.displayedItems[i] = item;
             }
           }
         }
@@ -230,8 +232,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     const index = this.displayedItems.findIndex(item => item.id === id);
     if (index > -1) {
       this.displayedItems[index].component.data = data;
-      this.items[index].component.data = data;
-      this.onItemsChange.emit(this.items);
+      // this.items[index].component.data = data;
+      this.onItemsChange.emit(this.displayedItems);
     }
     this.changeDetectorRef.markForCheck();
   }
