@@ -9,6 +9,8 @@
 !/npm/package.json
 /src/**/*.js
 /src/**/*.map
+/example/src/app/lib/src/*
+!/example/src/app/lib/src/_placeholder_
 
 
 # dependencies
@@ -39,3 +41,4 @@ testem.log
 #System Files
 .DS_Store
 Thumbs.db
+

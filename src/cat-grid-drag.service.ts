@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
+import { Observable, Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
-import { Subject } from 'rxjs/Subject';
 
 /**
  * Angular service used to control the dragging.

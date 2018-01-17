@@ -5,6 +5,8 @@
   "angular-cli": {},
   "main": "index.js",
   "scripts": {
+    "cleanbuild": "npm run clean && npm run build",
+    "clean": "del-cli npm/**/* !npm/package.json",
     "transpile": "ngc",
     "package": "rollup -c",
     "minify": "uglifyjs npm/bundles/cat-grid.umd.js --screw-ie8 --compress --mangle --comments --output npm/bundles/cat-grid.umd.min.js",
@@ -31,6 +33,7 @@
     "@types/jasmine": "^2.2.30",
     "@types/node": "^6.0.42",
     "codelyzer": "1.0.0-beta.1",
+    "del-cli": "^1.1.0",
     "jasmine-core": "2.4.1",
     "jasmine-spec-reporter": "2.5.0",
     "karma": "1.2.0",
@@ -42,7 +45,7 @@
     "rollup": "^0.43.0",
     "ts-node": "1.2.1",
     "tslint": "3.13.0",
-    "typescript": "~2.3.0",
+    "typescript": "2.3.4",
     "uglify-js": "^3.0.22",
     "webdriver-manager": "10.2.5"
   }

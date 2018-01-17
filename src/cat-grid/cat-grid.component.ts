@@ -116,12 +116,13 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       .takeUntil(this.destroyed$)
       .subscribe(droppedItem => {
         if (droppedItem) {
-          const index = this.displayedItems.findIndex(item => item.id === droppedItem.id);
+          const displayItemsIndex = this.displayedItems.findIndex(item => item.id === droppedItem.id);
+          const itemsIndex = this.items.findIndex(item => item.id === droppedItem.id);
           let changed = false;
 
-          if (index > -1) {
-            this.displayedItems.splice(index, 1);
-            this.items.splice(index, 1);
+          if (displayItemsIndex > -1) {
+            this.displayedItems.splice(displayItemsIndex, 1);
+            this.items.splice(itemsIndex, 1);
             changed = true;
           }
 

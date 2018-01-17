@@ -1,5 +1,5 @@
 import { CatGridItemConfig } from './cat-grid-item.config';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs/Rx';
 
 export interface ICatGridItemComponent {
   catGridItemLoaded(config: CatGridItemConfig): void;

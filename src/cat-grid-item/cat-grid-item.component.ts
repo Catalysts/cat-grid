@@ -18,8 +18,7 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { CatGridItemEvent } from './cat-grid-item.event';
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
+import { Observable, Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from './cat-grid-item.config';
 import { CatGridDragService } from '../cat-grid-drag.service';
 
