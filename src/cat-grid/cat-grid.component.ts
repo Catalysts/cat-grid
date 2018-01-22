@@ -164,14 +164,14 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
     if (changes.items) {
       // remove items which not longer are displayed
-      this.displayedItems.forEach((item, i) => {
+      for (let i=this.displayedItems.length-1; i>=0; i--) {
+        // iterate in reverse to be able to remove items without breaking iteration
+        const item = this.displayedItems[i];
         const currentIdx = changes.items.currentValue.findIndex((cItem: any) => cItem.id === item.id);
         if (currentIdx < 0) {
           this.displayedItems.splice(i, 1);
         }
-      });
-      // this.displayedItems = this.displayedItems.filter(item => changes.items.currentValue
-      //   .find((changedItem: any) => item.id === changedItem.id));
+      }
       changes.items.currentValue.forEach((item: any) => {
         const i = this.displayedItems.findIndex(displayedItem => displayedItem.id === item.id);
         if (i < 0) {
