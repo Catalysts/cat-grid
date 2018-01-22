@@ -14,9 +14,6 @@ export class TestComponent implements ICatGridItemComponent{
   catGridItemLoaded(config: CatGridItemConfig): void {
   }
 
-  catGridItemResized(config: CatGridItemConfig): void {
-  }
-
   dataChangedObservable() {
     return Observable.empty();
   }

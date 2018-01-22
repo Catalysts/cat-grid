@@ -7,8 +7,8 @@ describe('angular2-grid-new App', function() {
     page = new Angular2GridNewPage();
   });
 
-  it('should display message saying app works', () => {
+  it('should display content of grid element', () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual('app works!');
+    expect(page.getGridElementText()).toEqual('test');
   });
 });

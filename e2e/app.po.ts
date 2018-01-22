@@ -5,7 +5,7 @@ export class Angular2GridNewPage {
     return browser.get('/');
   }
 
-  getParagraphText() {
-    return element(by.css('app-root h1')).getText();
+  getGridElementText() {
+    return element(by.css('cat-grid cat-grid-item test')).getText();
   }
 }

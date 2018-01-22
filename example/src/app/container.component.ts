@@ -30,9 +30,6 @@ export class ContainerComponent {
   catGridItemLoaded(config: CatGridItemConfig): void {
   }
 
-  catGridItemResized(config: CatGridItemConfig): void {
-  }
-
   dataChangedObservable() {
     return this.dataChanged$.asObservable();
   }

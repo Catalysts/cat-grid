@@ -24,3 +24,11 @@ Then run:
 
 > npm start
 
+
+## End2End Tests
+
+Naivate to the `example` subfolder.
+
+Then run:
+
+> npm run-script e2e

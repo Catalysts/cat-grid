@@ -104,6 +104,12 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       if (this.validPosition(newConfig)) {
         this.displayedItems.splice(idx, 1);
         this.displayedItems.push(newConfig);
+        const itemIdx = this.items.findIndex(i => i.id === id)
+        if (itemIdx > -1) {
+          // propagate change to item (should always be found)
+          this.items[itemIdx].sizex = newSizeX;
+          this.items[itemIdx].sizey = newSizeY;
+        }
         this.onItemsChange.emit(this.items);
         this.itemsComponents.forEach(item => item.show());
         this.changeDetectorRef.markForCheck();
