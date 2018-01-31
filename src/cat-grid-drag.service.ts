@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
+import { CatGridDragResult } from './cat-grid-drag-result.interface';
 
 /**
  * Angular service used to control the dragging.
@@ -18,6 +19,7 @@ export class CatGridDragService {
   mouseMoveInside$ = new Subject<MouseEvent>();
   mouseUpInside$ = new Subject<MouseEvent>();
   droppedItem$ = new Subject<CatGridItemConfig | null>();
+  droppedOutside$ = new Subject<CatGridDragResult>();
 
   dragConfig: CatGridItemConfig | null = null;
   dragNode: HTMLElement | null = null;
@@ -74,7 +76,10 @@ export class CatGridDragService {
           ${event.clientY - this.nodeConfig.clientY}px
         )`);
 
-      this.windowMouseUp$.subscribe(() => {
+      this.windowMouseUp$.subscribe((event) => {
+        if (this.dragConfig) {
+          this.droppedOutside$.next({config: this.dragConfig, target: event.target});
+        }
         this.itemDropped(null);
         this.stopDrag();
       });
@@ -104,5 +109,9 @@ export class CatGridDragService {
 
   itemDroppedObservable() {
     return this.droppedItem$.asObservable();
+  }
+
+  droppedOutsideObservable() {
+    return this.droppedOutside$.asObservable();
   }
 }
