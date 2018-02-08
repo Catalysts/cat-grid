@@ -63,6 +63,9 @@ export class CatGridDragService {
         left: node.getBoundingClientRect().left,
         top: node.getBoundingClientRect().top,
       };
+      // move dragged elements top/left position to the mouse cursor's position
+      this.nodeConfig.left = this.nodeConfig.left + (e.clientX - this.nodeConfig.left);
+      this.nodeConfig.top = this.nodeConfig.top + (e.clientY - this.nodeConfig.top);
 
       this.dragNode.style.top = this.nodeConfig.top + 'px';
       this.dragNode.style.left = this.nodeConfig.left + 'px';
