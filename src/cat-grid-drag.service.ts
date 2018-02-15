@@ -33,7 +33,7 @@ export class CatGridDragService {
   };
 
   constructor() {
-    this.windowMouseMove$ = Observable.fromEvent(window, 'mousemove').merge(this.mouseMoveInside$.asObservable());
+    this.windowMouseMove$ = <Observable<MouseEvent>>Observable.fromEvent(window, 'mousemove').merge(this.mouseMoveInside$.asObservable());
     this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup');
     this.container = document.createElement('span');
     document.body.appendChild(this.container);
