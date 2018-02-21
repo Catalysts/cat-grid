@@ -57,12 +57,21 @@ export class CatGridDragService {
       this.dragNode.style.position = 'fixed';
       this.dragNode.style.zIndex = '9999';
 
+      let draggedRect = node.getBoundingClientRect();
       this.nodeConfig = {
         clientX: e.clientX,
         clientY: e.clientY,
-        left: node.getBoundingClientRect().left,
-        top: node.getBoundingClientRect().top,
+        left: draggedRect.left,
+        top: draggedRect.top,
       };
+
+      if (!(draggedRect.left < e.clientX && e.clientX < draggedRect.right
+        && draggedRect.top < e.clientY && e.clientY < draggedRect.bottom)) {
+        // mouse position not inside of dragged element, would produce invalid drag offset
+        // set to same position to get offsets=0
+        this.nodeConfig.left = e.clientX;
+        this.nodeConfig.top = e.clientY;
+      }
 
       this.dragNode.style.top = this.nodeConfig.top + 'px';
       this.dragNode.style.left = this.nodeConfig.left + 'px';
