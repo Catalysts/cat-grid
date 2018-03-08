@@ -57,15 +57,21 @@ export class CatGridDragService {
       this.dragNode.style.position = 'fixed';
       this.dragNode.style.zIndex = '9999';
 
+      let draggedRect = node.getBoundingClientRect();
       this.nodeConfig = {
         clientX: e.clientX,
         clientY: e.clientY,
-        left: node.getBoundingClientRect().left,
-        top: node.getBoundingClientRect().top,
+        left: draggedRect.left,
+        top: draggedRect.top,
       };
-      // move dragged elements top/left position to the mouse cursor's position
-      this.nodeConfig.left = this.nodeConfig.left + (e.clientX - this.nodeConfig.left);
-      this.nodeConfig.top = this.nodeConfig.top + (e.clientY - this.nodeConfig.top);
+
+      if (!(draggedRect.left < e.clientX && e.clientX < draggedRect.right
+        && draggedRect.top < e.clientY && e.clientY < draggedRect.bottom)) {
+        // mouse position not inside of dragged element, would produce invalid drag offset
+        // set to same position to get offsets=0
+        this.nodeConfig.left = e.clientX;
+        this.nodeConfig.top = e.clientY;
+      }
 
       this.dragNode.style.top = this.nodeConfig.top + 'px';
       this.dragNode.style.left = this.nodeConfig.left + 'px';
@@ -87,6 +93,16 @@ export class CatGridDragService {
         this.stopDrag();
       });
     }
+  }
+
+  getDragOffset():DragOffset {
+    if (!this.nodeConfig) {
+      return {x:0, y:0};
+    }
+    return {
+      x: (this.nodeConfig.clientX - this.nodeConfig.left),
+      y: (this.nodeConfig.clientY - this.nodeConfig.top)
+    };
   }
 
   mouseMoveInside(event: MouseEvent) {
@@ -117,4 +133,9 @@ export class CatGridDragService {
   droppedOutsideObservable() {
     return this.droppedOutside$.asObservable();
   }
+}
+
+export interface DragOffset {
+  x:number,
+  y:number
 }

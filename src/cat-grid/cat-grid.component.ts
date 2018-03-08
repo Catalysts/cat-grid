@@ -18,7 +18,7 @@ import {
 import {Subject} from 'rxjs/Rx';
 import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
 import {CatGridConfig} from './cat-grid.config';
-import {CatGridDragService} from '../cat-grid-drag.service';
+import {CatGridDragService, DragOffset} from '../cat-grid-drag.service';
 import {CatGridValidationService} from '../cat-grid-validation.service';
 import {intersect, toRectangle} from './utils';
 import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/cat-grid-placeholder.component';
@@ -200,7 +200,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
       e.dirty = true;
       if (!!this.gridDragService.dragConfig) {
         this.gridDragService.mouseMoveInside(e);
-        this.showPlaceholder(this.gridDragService.dragConfig, this.itemConfigFromEvent(this.gridDragService.dragConfig, e));
+        this.showPlaceholder(this.gridDragService.dragConfig,
+          this.itemConfigFromEvent(this.gridDragService.dragConfig, e, this.gridDragService.getDragOffset()));
       } else {
         this.hidePlaceholder();
       }
@@ -222,7 +223,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     e.dirty = true;
     if (!!this.gridDragService.dragConfig) {
       this.gridDragService.mouseUpInside(e);
-      const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e);
+      const config = this.itemConfigFromEvent(this.gridDragService.dragConfig, e, this.gridDragService.getDragOffset());
       if (this.validPosition(config)) {
         this.droppedItem = config;
         this.gridDragService.stopDrag();
@@ -313,8 +314,10 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
     }
   }
 
-  itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent): CatGridItemConfig {
-    const {x, y} = this.getMousePos(event);
+  itemConfigFromEvent(config: CatGridItemConfig, event: MouseEvent, dragOffset: DragOffset = {x: 0, y: 0}): CatGridItemConfig {
+    let {x, y} = this.getMousePos(event);
+    x = x - dragOffset.x;
+    y = y - dragOffset.y;
     let {col, row} = this.getGridPosition(x, y);
 
     // if position is outside, keep the current position on each axis accordingly
