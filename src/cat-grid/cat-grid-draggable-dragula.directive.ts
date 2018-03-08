@@ -1,7 +1,7 @@
 import {Directive, HostListener, Input, HostBinding, ElementRef, OnDestroy} from '@angular/core';
 import { CatGridDragService } from '../cat-grid-drag.service';
 import { DragulaService } from 'ng2-dragula';
-import { Subject } from 'rxjs/Rx';
+import { Subject } from 'rxjs/Subject';
 import { CatGridItemConfig } from '../cat-grid-item/cat-grid-item.config';
 
 @Directive({

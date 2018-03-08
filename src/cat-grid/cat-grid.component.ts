@@ -15,7 +15,7 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import {Subject} from 'rxjs/Rx';
+import { Subject } from 'rxjs/Subject';
 import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
 import {CatGridConfig} from './cat-grid.config';
 import {CatGridDragService, DragOffset} from '../cat-grid-drag.service';

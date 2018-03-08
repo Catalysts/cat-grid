@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs/Rx';
+import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/observable/fromEvent';
+import 'rxjs/add/operator/merge';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/takeUntil';
 import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
 import { CatGridDragResult } from './cat-grid-drag-result.interface';
 
