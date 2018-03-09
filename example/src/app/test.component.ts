@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ICatGridItemComponent } from './lib/src/cat-grid-item/cat-grid-item.interface';
 import { CatGridItemConfig } from './lib/src/cat-grid-item/cat-grid-item.config';
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/empty';
 
 @Component({
   selector: 'test',
