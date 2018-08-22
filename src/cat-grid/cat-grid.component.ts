@@ -31,7 +31,7 @@ import {CatGridItemEvent} from '../cat-grid-item/cat-grid-item.event';
     <cat-grid-item [config]="item"
                    [x]="getXForItem(item)"
                    [y]="getYForItem(item)"
-                   [colWidth]="config.colWidth"
+                   [colWidth]="colWidth"
                    [rowHeight]="config.rowHeight"
                    (dataChanged)="itemDataChanged($event, item.id)"
                    (onResize)="itemResizing($event, item.id)"
@@ -65,6 +65,10 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
               private changeDetectorRef: ChangeDetectorRef,
               private gridDragService: CatGridDragService,
               private gridPositionService: CatGridValidationService) {
+  }
+
+  get colWidth():number {
+    return this.config.colWidth;
   }
 
   getSizeFromPx(px: number) {
@@ -190,8 +194,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
           }
         }
       });
-      this.changeDetectorRef.markForCheck();
     }
+    this.changeDetectorRef.markForCheck();
   }
 
   @HostListener('mousemove', ['$event'])

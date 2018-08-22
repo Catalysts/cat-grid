@@ -161,6 +161,11 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     if (changes.x || changes.y) {
       this.setPosition(this.x, this.y);
     }
+    if (changes.colWidth || changes.rowHeight) {
+      this.setSize(this.config.sizex * this.colWidth, this.config.sizey * this.rowHeight);
+      this.changeDetectorRef.markForCheck();
+      // this.injectComponent();
+    }
     if (!config) {
       return;
     }
