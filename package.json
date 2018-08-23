@@ -1,6 +1,6 @@
 {
   "name": "cat-ng-grid",
-  "version": "2.0.15",
+  "version": "2.1.8",
   "license": "MIT",
   "angular-cli": {},
   "main": "index.js",
