@@ -164,7 +164,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     if (changes.colWidth || changes.rowHeight) {
       this.setSize(this.config.sizex * this.colWidth, this.config.sizey * this.rowHeight);
       this.changeDetectorRef.markForCheck();
-      // this.injectComponent();
+      this.injectComponent();
     }
     if (!config) {
       return;
@@ -272,6 +272,10 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
 
     if (this.componentRef.instance.catGridItemLoaded) {
       this.componentRef.instance.catGridItemLoaded(this.config);
+    }
+
+    if (this.componentRef.instance.cellSizeChanged) {
+      this.componentRef.instance.cellSizeChanged(this.colWidth, this.rowHeight);
     }
 
     if (this.componentRef.instance.dataChangedObservable) {

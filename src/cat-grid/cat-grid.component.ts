@@ -16,14 +16,12 @@ import {
   ViewChildren
 } from '@angular/core';
 import {Subject} from 'rxjs/Rx';
-import {CatGridItemConfig} from '../cat-grid-item/cat-grid-item.config';
+import {CatGridItemComponent, CatGridItemConfig, CatGridItemEvent} from '../cat-grid-item/index';
 import {CatGridConfig} from './cat-grid.config';
 import {CatGridDragService, DragOffset} from '../cat-grid-drag.service';
 import {CatGridValidationService} from '../cat-grid-validation.service';
 import {intersect, toRectangle} from './utils';
-import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/cat-grid-placeholder.component';
-import {CatGridItemComponent} from '../cat-grid-item/cat-grid-item.component';
-import {CatGridItemEvent} from '../cat-grid-item/cat-grid-item.event';
+import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/index';
 
 @Component({
   selector: 'cat-grid',
@@ -67,7 +65,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
               private gridPositionService: CatGridValidationService) {
   }
 
-  get colWidth():number {
+  get colWidth(): number {
     return this.config.colWidth;
   }
 
@@ -168,7 +166,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
 
     if (changes.items) {
       // remove items which not longer are displayed
-      for (let i=this.displayedItems.length-1; i>=0; i--) {
+      for (let i = this.displayedItems.length - 1; i >= 0; i--) {
         // iterate in reverse to be able to remove items without breaking iteration
         const item = this.displayedItems[i];
         const currentIdx = changes.items.currentValue.findIndex((cItem: any) => cItem.id === item.id);
@@ -185,7 +183,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
           // this is an old item
           const itemRef = this.itemsComponents.find(cmp => cmp.config.id === item.id);
           if (itemRef) {
-            const oldConfig = changes.items.previousValue.find((i: any) => i.id === item.id);
+            const oldConfig = changes.items.previousValue.find((prevItem: any) => prevItem.id === item.id);
             if (JSON.stringify(oldConfig) !== JSON.stringify(item)) {
               // itemRef.setPosition(this.getXForItem(item), this.getYForItem(item));
               // itemRef.applyConfigChanges(item);
