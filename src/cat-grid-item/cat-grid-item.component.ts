@@ -18,9 +18,10 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { CatGridItemEvent } from './cat-grid-item.event';
-import { Observable, Subject } from 'rxjs/Rx';
 import { CatGridItemConfig } from './cat-grid-item.config';
 import { CatGridDragService } from '../cat-grid-drag.service';
+import { partition, fromEvent, Observable, Subject } from 'rxjs';
+import { takeUntil, filter, mergeMap, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'cat-grid-item',
@@ -38,7 +39,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   @Output() onResizeStop = new EventEmitter<CatGridItemEvent>();
   @Output() dataChanged = new EventEmitter<any>();
 
-  @ViewChild('componentContainer', {read: ViewContainerRef})
+  @ViewChild('componentContainer', {read: ViewContainerRef, static: true})
   private componentContainer: ViewContainerRef;
 
   @HostBinding('style.z-index')
@@ -79,22 +80,22 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     this.renderer.addClass(this.elementRef.nativeElement, 'grid-item');
     this.renderer.setStyle(this.elementRef.nativeElement, 'position', 'absolute');
 
-    [this.dragStart$, this.resizeStart$] = Observable.fromEvent(this.elementRef.nativeElement, 'mousedown')
-      .partition((e: any) => !this.canResize(e));
+    [this.dragStart$, this.resizeStart$] = partition(fromEvent(this.elementRef.nativeElement, 'mousedown'),
+      (e: any) => !this.canResize(e));
 
-    this.mouseUp$ = Observable.fromEvent(this.elementRef.nativeElement, 'mouseup');
-    this.mouseMove$ = Observable.fromEvent(document, 'mousemove');
+    this.mouseUp$ = fromEvent(this.elementRef.nativeElement, 'mouseup');
+    this.mouseMove$ = fromEvent<MouseEvent>(document, 'mousemove');
 
     this.setSize(this.config.sizex * this.colWidth, this.config.sizey * this.rowHeight);
 
-    this.mouseMove$.takeUntil(this.destroyed$)
+    this.mouseMove$.pipe(takeUntil(this.destroyed$))
       .subscribe(e => {
         this.setResizeCursor(e);
       });
 
-    this.dragStart$
-      .filter(() => this.config.draggable)
-      .takeUntil(this.destroyed$)
+    this.dragStart$.pipe(
+      filter(() => this.config.draggable),
+      takeUntil(this.destroyed$))
       .subscribe((e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -103,11 +104,11 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
         this.changeDetectorRef.markForCheck();
       });
 
-    this.resize$ = this.resizeStart$.flatMap((dragStart: MouseEvent) => {
+    this.resize$ = this.resizeStart$.pipe(mergeMap((dragStart: MouseEvent) => {
       const initialHeight = this.elemHeight;
       const initialWidth = this.elemWidth;
       const type = this.canResize(dragStart);
-      return this.mouseMove$.map((mm: MouseEvent) => {
+      return this.mouseMove$.pipe(map((mm: MouseEvent) => {
         mm.preventDefault();
 
         const newWidth = initialWidth + mm.clientX - dragStart.clientX;
@@ -119,9 +120,9 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
           event: mm,
           type
         };
-      })
-        .takeUntil(Observable.fromEvent(window, 'mouseup'))
-        .do(
+      }),
+        takeUntil(fromEvent(window, 'mouseup')),
+        tap(
           size => {},
           null,
           () => {
@@ -132,11 +133,11 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
             }
             this.changeDetectorRef.markForCheck();
           }
-        );
-    });
+        ));
+    }));
 
-    this.resize$
-      .takeUntil(this.destroyed$)
+    this.resize$.pipe(
+      takeUntil(this.destroyed$))
       .subscribe(size => {
         const {type} = size;
 

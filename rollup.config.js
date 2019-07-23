@@ -1,8 +1,11 @@
 export default {
-  entry: './npm/index.js',
-  dest: './npm/bundles/cat-grid.umd.js',
+  input: './npm/index.js',
   sourceMap: false,
-  format: 'umd',
+  output: {
+    format: 'umd',
+    file: './npm/bundles/cat-grid.umd.js',
+    name: 'ng.cat-grid'
+  },
   moduleName: 'ng.cat-grid',
   external: [
     '@angular/core',

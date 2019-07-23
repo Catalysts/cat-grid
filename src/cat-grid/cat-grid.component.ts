@@ -15,13 +15,15 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import {Subject} from 'rxjs/Rx';
+
 import {CatGridItemComponent, CatGridItemConfig, CatGridItemEvent} from '../cat-grid-item/index';
 import {CatGridConfig} from './cat-grid.config';
 import {CatGridDragService, DragOffset} from '../cat-grid-drag.service';
 import {CatGridValidationService} from '../cat-grid-validation.service';
 import {intersect, toRectangle} from './utils';
 import {CatGridPlaceholderComponent} from '../cat-grid-placeholder/index';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'cat-grid',
@@ -53,7 +55,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   @HostBinding('style.cursor') cursor = 'auto';
   @HostBinding('style.width.px') width = 100;
   @HostBinding('style.height.px') height = 100;
-  @ViewChild(CatGridPlaceholderComponent) placeholder: CatGridPlaceholderComponent;
+  @ViewChild(CatGridPlaceholderComponent, {static: true}) placeholder: CatGridPlaceholderComponent;
   @ViewChildren(CatGridItemComponent) itemsComponents: QueryList<CatGridItemComponent>;
   displayedItems: CatGridItemConfig[] = [];
   destroyed$ = new Subject();
@@ -120,8 +122,8 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnInit() {
-    this.gridDragService.itemDroppedObservable()
-      .takeUntil(this.destroyed$)
+    this.gridDragService.itemDroppedObservable().pipe(
+      takeUntil(this.destroyed$))
       .subscribe(droppedItem => {
         if (droppedItem) {
           const displayItemsIndex = this.displayedItems.findIndex(item => item.id === droppedItem.id);

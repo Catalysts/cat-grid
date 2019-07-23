@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs/Rx';
+import { fromEvent, merge , Observable, Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { CatGridItemConfig } from './cat-grid-item/cat-grid-item.config';
 import { CatGridDragResult } from './cat-grid-drag-result.interface';
 
@@ -33,8 +34,8 @@ export class CatGridDragService {
   };
 
   constructor() {
-    this.windowMouseMove$ = Observable.fromEvent<MouseEvent>(window, 'mousemove').merge(this.mouseMoveInside$.asObservable());
-    this.windowMouseUp$ = Observable.fromEvent(window, 'mouseup');
+    this.windowMouseMove$ = merge(fromEvent<MouseEvent>(window, 'mousemove').pipe(), this.mouseMoveInside$.asObservable());
+    this.windowMouseUp$ = fromEvent<MouseEvent>(window, 'mouseup');
     this.container = document.createElement('span');
     document.body.appendChild(this.container);
   }
@@ -78,8 +79,8 @@ export class CatGridDragService {
       this.container.appendChild(this.dragNode);
 
       this.windowMouseMove$
-        .filter(() => !!this.dragNode)
-        .takeUntil(this.windowMouseUp$.merge(this.mouseUpInside$.asObservable()))
+        .pipe(filter(() => !!this.dragNode),
+        takeUntil(merge(this.windowMouseUp$.pipe(), this.mouseUpInside$.asObservable())))
         .subscribe((event: MouseEvent) => this.dragNode.style.transform = `translate(
           ${event.clientX - this.nodeConfig.clientX}px,
           ${event.clientY - this.nodeConfig.clientY}px
