@@ -43,19 +43,19 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
   private componentContainer: ViewContainerRef;
 
   @HostBinding('style.z-index')
-  private zIndex: number = 2;
+  zIndex: number = 2;
 
   @HostBinding('style.cursor')
-  private cursor: string;
+  cursor: string;
 
   @HostBinding('style.transform')
-  private transform: string;
+  transform: string;
 
   @HostBinding('style.width.px')
-  private elemWidth: number;
+  elemWidth: number;
 
   @HostBinding('style.height.px')
-  private elemHeight: number;
+  elemHeight: number;
 
   private mouseUp$: Observable<MouseEvent>;
   private mouseMove$: Observable<MouseEvent>;
