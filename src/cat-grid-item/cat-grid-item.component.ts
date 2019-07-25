@@ -280,7 +280,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     }
 
     if (this.componentRef.instance.dataChangedObservable) {
-      this.componentRef.instance.dataChangedObservable().takeUntil(this.destroyed$).subscribe((data: any) => {
+      this.componentRef.instance.dataChangedObservable().pipe(takeUntil(this.destroyed$)).subscribe((data: any) => {
         this.config.component.data = data;
         this.dataChanged.emit(data);
         this.changeDetectorRef.markForCheck();
@@ -288,7 +288,7 @@ export class CatGridItemComponent implements OnInit, OnDestroy, OnChanges, After
     }
 
     if (this.componentRef.instance.configChangedObservable) {
-      this.componentRef.instance.configChangedObservable().takeUntil(this.destroyed$).subscribe((config: CatGridItemConfig) => {
+      this.componentRef.instance.configChangedObservable().pipe(takeUntil(this.destroyed$)).subscribe((config: CatGridItemConfig) => {
         this.applyConfigChanges(config);
       });
     }

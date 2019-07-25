@@ -1,6 +1,6 @@
 {
   "name": "cat-ng-grid",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "license": "MIT",
   "keywords": [
     "angular",
@@ -25,6 +25,6 @@
     "@angular/common": "^8.0.0",
     "angular2-uuid": "^1.1.0",
     "ng2-dragula": "^1.2.1",
-    "rxjs": "~6.0.0"
+    "rxjs": "^6.0.0"
   }
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CatGridConfig } from './lib/src/cat-grid/cat-grid.config';
 import { CatGridItemConfig } from './lib/src/cat-grid-item/cat-grid-item.config';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'cat-container',

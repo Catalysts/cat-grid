@@ -1,7 +1,7 @@
 {
-  "name": "angular-quickstart",
+  "name": "cat-grid-example",
   "version": "1.0.0",
-  "description": "QuickStart package.json from the documentation, supplemented with testing support",
+  "description": "Small example for grid library",
   "scripts": {
     "copyLib": "cpx ../src/**/* ./src/app/lib/src/",
     "build": "npm run copyLib && tsc -p src/",
@@ -33,16 +33,15 @@
     "@angular/platform-browser": "~8.1.1",
     "@angular/platform-browser-dynamic": "~8.1.1",
     "@angular/router": "~8.1.1",
-    "angular-in-memory-web-api": "~0.3.0",
     "core-js": "^2.4.1",
     "ng2-dragula": "^1.5.0",
-    "rxjs": "5.0.1",
+    "rxjs": "^6.5.2",
     "systemjs": "0.19.40",
     "zone.js": "^0.8.4"
   },
   "devDependencies": {
-    "@types/jasmine": "2.5.36",
-    "@types/node": "^6.0.46",
+    "@types/jasmine": "3.3.15",
+    "@types/node": "^12.6.8",
     "canonical-path": "0.0.2",
     "concurrently": "^3.2.0",
     "cpx": "^1.5.0",
@@ -54,10 +53,10 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "lite-server": "^2.2.2",
     "lodash": "^4.16.4",
-    "protractor": "~4.0.14",
+    "protractor": "~5.4.2",
     "rimraf": "^2.5.4",
-    "tslint": "^3.15.1",
-    "typescript": "~2.1.0"
+    "tslint": "5.18.0",
+    "typescript": "3.4.5"
   },
   "repository": {}
 }

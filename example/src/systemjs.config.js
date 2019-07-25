@@ -6,7 +6,8 @@
   System.config({
     paths: {
       // paths serve as alias
-      'npm:': 'node_modules/'
+      'npm:': 'node_modules/',
+
     },
     // map tells the System loader where to look for things
     map: {
@@ -25,7 +26,8 @@
 
       // other libraries
       'rxjs':                      'npm:rxjs',
-      'ng2-dragula':                      'npm:ng2-dragula/bundles/ng2-dragula.umd.js',
+      'rxjs/operators':            'npm:rxjs/operators',
+      'ng2-dragula':               'npm:ng2-dragula/bundles/ng2-dragula.umd.js',
       'angular-in-memory-web-api': 'npm:angular-in-memory-web-api/bundles/in-memory-web-api.umd.js'
     },
     // packages tells the System loader how to load when no filename and/or no extension
@@ -38,9 +40,8 @@
           }
         }
       },
-      rxjs: {
-        defaultExtension: 'js'
-      }
+      'rxjs': {main: 'index.js'},
+      'rxjs/operators': {main: 'index.js'},
     }
   });
 })(this);

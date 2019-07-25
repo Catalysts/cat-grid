@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ICatGridItemComponent } from './lib/src/cat-grid-item/cat-grid-item.interface';
 import { CatGridItemConfig } from './lib/src/cat-grid-item/cat-grid-item.config';
-import { Observable } from 'rxjs/Observable';
+import { empty, Observable } from 'rxjs';
 
 @Component({
   selector: 'test',
@@ -9,12 +9,12 @@ import { Observable } from 'rxjs/Observable';
 })
 export class TestComponent implements ICatGridItemComponent{
   configChangedObservable(): Observable<CatGridItemConfig> {
-    return Observable.empty();
+    return empty();
   }
   catGridItemLoaded(config: CatGridItemConfig): void {
   }
 
   dataChangedObservable() {
-    return Observable.empty();
+    return empty();
   }
 }
