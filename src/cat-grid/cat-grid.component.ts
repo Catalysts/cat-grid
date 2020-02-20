@@ -295,6 +295,7 @@ export class CatGridComponent implements OnChanges, OnDestroy, OnInit {
   hidePlaceholder() {
     this.cursor = 'auto';
     this.placeholder.hide();
+    this.placeholder.setPosition(-1, -1);
   }
 
   validPosition(config: CatGridItemConfig) {
